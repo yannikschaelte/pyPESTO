@@ -21,7 +21,10 @@ problem = pypesto.Problem(objective=objective, lb=lb, ub=ub)
 optimizer = pypesto.ScipyOptimizer()
 n_starts = 20
 
-result = pypesto.minimize(problem=problem, optimizer=optimizer, n_starts=n_starts)
+result = pypesto.minimize(
+    problem=problem,
+    optimizer=optimizer,
+    n_starts=n_starts)
 
 history = pypesto.storage.history.History("sqlite:///db.db")
 history.save_result(result)

@@ -3,8 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, subqueryload
 
 from .db_model import (Base, Result, OptimizeResult, OptimizerResult)
-from ..result import (Result as PyResult,
-                      OptimizeResult as PyOptimizeResult)
+from ..result import Result as PyResult
 from ..optimize import OptimizerResult as PyOptimizerResult
 
 
@@ -69,7 +68,7 @@ class History:
     def save_result(self, py_result):
         result = Result()
         optimize_result = OptimizeResult(result=result)
-        
+
         for py_optimizer_result in py_result.optimize_result.as_list():
             optimizer_result = OptimizerResult(
                 x=py_optimizer_result.x,

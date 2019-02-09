@@ -1,7 +1,7 @@
 import sqlalchemy.types as types
 from sqlalchemy import (
     Column, ForeignKey,
-    Integer, Float, DateTime, String, LargeBinary)
+    Integer, Float, String, LargeBinary)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -24,7 +24,10 @@ class BytesStorage(types.TypeDecorator):
 class Result(Base):
     __tablename__ = 'result'
     id = Column(Integer, primary_key=True)
-    optimize_result = relationship('OptimizeResult', uselist=False, back_populates='result')
+    optimize_result = relationship(
+        'OptimizeResult',
+        uselist=False,
+        back_populates='result')
 
 
 class OptimizeResult(Base):
