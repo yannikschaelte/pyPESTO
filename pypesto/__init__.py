@@ -27,7 +27,7 @@ from .profile import (parameter_profile,
                       ProfilerResult)
 from .engine import (SingleCoreEngine,
                      MultiProcessEngine)
-from .history import History
+from .storage import History
 
 
 __all__ = [
@@ -57,6 +57,6 @@ __all__ = [
     # engine
     "SingleCoreEngine",
     "MultiProcessEngine",
-    # history
+    # storage
     "History",
 ]
