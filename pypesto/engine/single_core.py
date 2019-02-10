@@ -1,4 +1,9 @@
+import logging
+
 from .base import Engine
+
+
+logger = logging.getLogger(__name__)
 
 
 class SingleCoreEngine(Engine):
@@ -15,7 +20,8 @@ class SingleCoreEngine(Engine):
         Execute all tasks in a simple for loop sequentially.
         """
         results = []
-        for task in tasks:
+        for j_task, task in enumerate(tasks):
+            logger.info(f"Starting task {j_task + 1} of {len(tasks)}.")
             results.append(task.execute())
 
         return results

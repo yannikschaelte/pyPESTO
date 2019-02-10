@@ -3,12 +3,17 @@ import scipy.optimize
 import re
 import abc
 import time
+import logging
+
 from ..objective import res_to_chi2
 
 try:
     import dlib
 except ImportError:
     dlib = None
+
+
+logger = logging.getLogger(__name__)
 
 
 class OptimizerResult(dict):
@@ -342,6 +347,9 @@ class ScipyOptimizer(Optimizer):
             exitflag=res.status,
             message=res.message
         )
+
+        # logging
+        logger.info(f"Final fval: {fval}.")
 
         return optimizer_result
 
