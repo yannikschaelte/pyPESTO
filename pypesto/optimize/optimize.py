@@ -1,5 +1,5 @@
 import logging
-from pypesto import Result
+from ..result import Result, ProblemInfo
 from ..startpoint import assign_startpoints, uniform
 from .optimizer import OptimizerResult, recover_result, ScipyOptimizer
 from ..engine import OptimizerTask, SingleCoreEngine
@@ -112,7 +112,7 @@ def minimize(
 
     # prepare result
     if result is None:
-        result = Result(problem)
+        result = Result(problem_info=ProblemInfo.from_problem(problem))
 
     # engine
     if engine is None:

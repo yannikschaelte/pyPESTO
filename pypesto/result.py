@@ -8,8 +8,86 @@ optimization, profiles, sampling.
 
 """
 
+import numpy as np
 import pandas as pd
 import copy
+
+
+class ProblemInfo:
+
+    def __init__(
+            self,
+            objective_info="",
+            lb=None,
+            ub=None,
+            dim=np.nan,
+            lb_full=None,
+            ub_full=None,
+            dim_full=np.nan,
+            x_fixed_indices=None,
+            x_fixed_vals=None,
+            x_free_indices=None,
+            x_guesses=None,
+            x_names=None):
+
+        self.objective_info = objective_info
+
+        if lb is None:
+            lb = np.array([])
+        self.lb = lb
+
+        if ub is None:
+            ub = np.array([])
+        self.ub = ub
+
+        self.dim = dim
+
+        if lb_full is None:
+            lb_full = np.array([])
+        self.lb_full = lb_full
+
+        if ub_full is None:
+            ub_full = np.array([])
+        self.ub_full = ub_full
+
+        self.dim_full = dim_full
+
+        if x_fixed_indices is None:
+            x_fixed_indices = np.array([])
+        self.x_fixed_indices = x_fixed_indices
+
+        if x_fixed_vals is None:
+            x_fixed_vals = np.array([])
+        self.x_fixed_vals = x_fixed_vals
+
+        if x_free_indices is None:
+            x_free_indices = np.array([])
+        self.x_free_indices = x_free_indices
+
+        if x_guesses is None:
+            x_guesses = np.array([])
+        self.x_guesses = x_guesses
+
+        if x_names is None:
+            x_names = np.array([])
+        self.x_names = x_names
+
+    @staticmethod
+    def from_problem(problem):
+        problem_info = ProblemInfo(
+            objective_info=repr(problem.objective),
+            lb=problem.lb,
+            ub=problem.ub,
+            dim=problem.dim,
+            lb_full=problem.lb_full,
+            ub_full=problem.ub_full,
+            dim_full=problem.dim_full,
+            x_fixed_indices=np.array(problem.x_fixed_indices),
+            x_fixed_vals=np.array(problem.x_fixed_vals),
+            x_free_indices=np.array(problem.x_free_indices),
+            x_guesses=problem.x_guesses,
+            x_names=np.array(problem.x_names))
+        return problem_info
 
 
 class OptimizeResult:
@@ -161,7 +239,7 @@ class Result:
     Attributes
     ----------
 
-    problem: pypesto.Problem
+    problem_info: pypesto.ProblemInfo
         The problem underlying the results.
 
     optimize_result:
@@ -175,8 +253,8 @@ class Result:
 
     """
 
-    def __init__(self, problem=None):
-        self.problem = problem
+    def __init__(self, problem_info):
+        self.problem_info = problem_info
         self.optimize_result = OptimizeResult()
         self.profile_result = ProfileResult()
         self.sample_result = SampleResult()
