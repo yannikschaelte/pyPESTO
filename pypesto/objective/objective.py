@@ -631,3 +631,15 @@ class Objective:
         self.options.trace_record = tmp_trace_record
 
         return result
+
+    def get_config(self) -> dict:
+        # try to get the function name
+        conf = {"name": self.__class__.__name__}
+        try:
+            conf["fun"] = self.fun.__name__
+        except AttributeError:
+            pass
+        return conf
+
+    def __repr__(self) -> str:
+        return repr(self.get_config())
