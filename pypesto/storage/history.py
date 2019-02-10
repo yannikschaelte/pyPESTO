@@ -2,8 +2,9 @@ from functools import wraps
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, subqueryload
 
-from .db_model import (Base, Result, OptimizeResult, OptimizerResult)
-from ..result import Result as PyResult
+from .db_model import (Base, Result, ProblemInfo,
+                       OptimizeResult, OptimizerResult)
+from ..result import Result as PyResult, ProblemInfo as PyProblemInfo
 from ..optimize import OptimizerResult as PyOptimizerResult
 
 
@@ -67,8 +68,31 @@ class History:
     @with_session
     def save_result(self, py_result):
         result = Result()
+
         optimize_result = OptimizeResult(result=result)
 
+        # save problem info
+        py_problem_info = py_result.problem_info
+        problem_info = ProblemInfo(
+            result=result,
+            objective_info=py_problem_info.objective_info,
+            lb=py_problem_info.lb,
+            ub=py_problem_info.ub,
+            dim=py_problem_info.dim,
+            lb_full=py_problem_info.lb_full,
+            ub_full=py_problem_info.ub_full,
+            dim_full=py_problem_info.dim_full,
+            x_fixed_indices=py_problem_info.x_fixed_indices,
+            x_fixed_vals=py_problem_info.x_fixed_vals,
+            x_free_indices=py_problem_info.x_free_indices,
+            x_guesses=py_problem_info.x_guesses,
+            x_names=py_problem_info.x_names)
+        result.problem_info = problem_info
+
+        optimize_result = OptimizeResult(result=result)
+        result.optimize_result = optimize_result
+
+        # save optimizer results
         for py_optimizer_result in py_result.optimize_result.as_list():
             optimizer_result = OptimizerResult(
                 x=py_optimizer_result.x,
@@ -100,7 +124,23 @@ class History:
                   .filter(Result.id == self.id)
                   .one())
 
-        py_result = PyResult()
+        # get problem info
+        problem_info = result.problem_info
+        py_problem_info = PyProblemInfo(
+            objective_info=problem_info.objective_info,
+            lb=problem_info.lb,
+            ub=problem_info.ub,
+            dim=problem_info.dim,
+            lb_full=problem_info.lb_full,
+            ub_full=problem_info.ub_full,
+            dim_full=problem_info.dim_full,
+            x_fixed_indices=problem_info.x_fixed_indices,
+            x_fixed_vals=problem_info.x_fixed_vals,
+            x_free_indices=problem_info.x_free_indices,
+            x_guesses=problem_info.x_guesses,
+            x_names=problem_info.x_names)
+
+        py_result = PyResult(py_problem_info)
 
         for optimizer_result in result.optimize_result.optimizer_results:
 

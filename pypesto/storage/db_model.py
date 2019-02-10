@@ -24,24 +24,49 @@ class BytesStorage(types.TypeDecorator):
 class Result(Base):
     __tablename__ = 'result'
     id = Column(Integer, primary_key=True)
+    problem_info = relationship(
+        'ProblemInfo', uselist=False, back_populates='result')
     optimize_result = relationship(
-        'OptimizeResult',
-        uselist=False,
-        back_populates='result')
+        'OptimizeResult', uselist=False, back_populates='result')
+
+
+class ProblemInfo(Base):
+    __tablename__ = 'problem_info'
+    id = Column(Integer, primary_key=True)
+
+    result_id = Column(Integer, ForeignKey('result.id'))
+    result = relationship('Result', back_populates='problem_info')
+
+    objective_info = Column(String(5000))
+    lb = Column(BytesStorage)
+    ub = Column(BytesStorage)
+    dim = Column(Integer)
+    lb_full = Column(BytesStorage)
+    ub_full = Column(BytesStorage)
+    dim_full = Column(Integer)
+    x_fixed_indices = Column(BytesStorage)
+    x_fixed_vals = Column(BytesStorage)
+    x_free_indices = Column(BytesStorage)
+    x_guesses = Column(BytesStorage)
+    x_names = Column(BytesStorage)
 
 
 class OptimizeResult(Base):
     __tablename__ = 'optimize_result'
     id = Column(Integer, primary_key=True)
+
     result_id = Column(Integer, ForeignKey('result.id'))
     result = relationship('Result', back_populates='optimize_result')
+
     optimizer_results = relationship('OptimizerResult')
 
 
 class OptimizerResult(Base):
     __tablename__ = 'optimizer_result'
     id = Column(Integer, primary_key=True)
+
     optimize_result_id = Column(Integer, ForeignKey('optimize_result.id'))
+
     x = Column(BytesStorage)
     fval = Column(Float)
     grad = Column(BytesStorage)
