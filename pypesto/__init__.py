@@ -9,8 +9,7 @@ Parameter Estimation TOolbox for python.
 from .version import __version__  # noqa: F401
 from .objective import (ObjectiveOptions,
                         Objective,
-                        AmiciObjective,
-                        PetabImporter)
+                        AmiciObjective)
 from .problem import Problem
 from .result import (Result,
                      OptimizeResult,
@@ -27,14 +26,13 @@ from .profile import (parameter_profile,
                       ProfilerResult)
 from .engine import (SingleCoreEngine,
                      MultiProcessEngine)
-
+from .petab_import import (PetabImporter)
 
 __all__ = [
     # objective
     "ObjectiveOptions",
     "Objective",
     "AmiciObjective",
-    "PetabImporter",
     # problem
     "Problem",
     # result
@@ -56,4 +54,6 @@ __all__ = [
     # engine
     "SingleCoreEngine",
     "MultiProcessEngine",
+    # petab import
+    "PetabImporter"
 ]

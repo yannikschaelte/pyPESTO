@@ -6,11 +6,13 @@ import importlib
 import numbers
 import copy
 import shutil
+import yaml
 
 import petab
 
 from ..problem import Problem
-from .amici_objective import AmiciObjective
+from .petab_amici_objective import PetabAmiciObjective
+from ..optimize import ScipyOptimizer
 
 try:
     import amici
@@ -20,7 +22,7 @@ except ImportError:
 
 class PetabImporter:
 
-    def __init__(self, petab_problem, output_folder=None):
+    def __init__(self, petab_problem, output_folder=None, config_file=None):
         """
         petab_problem: petab.Problem
             Managing access to the model and data.
@@ -28,6 +30,10 @@ class PetabImporter:
         output_folder: str,  optional
             Folder to contain the amici model. Defaults to
             './tmp/petab_problem.name'.
+
+        config_file: str, optional
+            Path to a config file including options for amici and pypesto
+            in yaml format.
         """
         self.petab_problem = petab_problem
 
@@ -35,6 +41,8 @@ class PetabImporter:
             output_folder = os.path.abspath(
                 os.path.join("tmp", self.petab_problem.model_name))
         self.output_folder = output_folder
+
+        self.config_file = config_file
 
     @staticmethod
     def from_folder(folder, output_folder=None):
@@ -136,7 +144,36 @@ class PetabImporter:
             model = self.create_model()
 
         solver = model.getSolver()
+
+        # parse config
+        config = self.config
+        if config is not None and 'amici' in config:
+            if 'sensitivity_method' in config['amici']:
+                methods = {'adjoint': amici.SensitivityMethod_adjoint,
+                           'forward': amici.SensitivityMethod_forward}
+                config_method = config['amici']['sensitivity_method'].lower()
+                if config_method in methods:
+                    solver.setSensitivityMethod(methods[config_method])
+                else:
+                    raise ValueError(f"Sensitivity method must be one of {methods.keys()}.")
+            if 'sensitivity_order' in config['amici']:
+                orders = {'none': amici.SensitivityOrder_none,
+                          'first': amici.SensitivityOrder_first,
+                          'second': amici.SensitivityOrder_second}
+                config_order = config['amici']['sensitivity_order'].lower()
+                if config_order in orders:
+                    solver.setSensitivityOrder(orders[config_order])
+                else:
+                    raise ValueError(f"Sensitivity order must be one of {orders.keys()}.")
+
         return solver
+    
+    @property
+    def config(self):
+        if self.config_file is None:
+            return None
+        with open(self.config_file, 'r') as f:
+            return yaml.load(f)
 
     def create_edatas(self, model=None):
         """
@@ -265,6 +302,31 @@ class PetabImporter:
                           x_names=self.petab_problem.x_ids)
 
         return problem
+    
+    def get_n_starts(self):
+        config = self.config
+        if config is not None and 'pypesto' in config:
+            if 'n_starts' in config['pypesto']:
+                return int(config['pypesto']['n_starts'])
+
+    def create_optimizer(self):
+        config = self.config
+        if config is not None and 'pypesto' in config:
+            if 'optimizer' not in config['pypesto']:
+                return None
+            optimizers = {'ScipyOptimizer': ScipyOptimizer}
+            config_optimizer = config['pypesto']['optimizer']
+            if config_optimizer not in optimizers:
+                raise ValueError(f"Optimizer must be one of {optimizers}.")
+            if config_optimizer == 'ScipyOptimizer':
+                kwargs = {}
+                if 'method' in config['pypesto']:
+                    kwargs['method'] = config['pypesto']['method']
+                if 'optimizer_options' in config['pypesto']:
+                    kwargs['options'] = config['pypesto']['optimizer_options']
+                return ScipyOptimizer(**kwargs)
+            # TODO: add Dlib
+        return None
 
     def rdatas_to_measurement_df(self, rdatas, model=None):
         """
@@ -441,71 +503,3 @@ def _handle_fixed_parameters(
         edata.fixedParametersPreequilibration = \
             fixed_preequilibration_parameter_vals.astype(float) \
                                                  .flatten()
-
-
-class PetabAmiciObjective(AmiciObjective):
-    """
-    This is a shallow wrapper around AmiciObjective to make it serializable.
-    """
-
-    def __init__(
-            self,
-            petab_importer,
-            amici_model, amici_solver, edatas,
-            x_ids, x_names,
-            mapping_par_opt_to_par_sim,
-            mapping_scale_opt_to_scale_sim):
-
-        super().__init__(
-            amici_model=amici_model,
-            amici_solver=amici_solver,
-            edatas=edatas,
-            x_ids=x_ids, x_names=x_names,
-            mapping_par_opt_to_par_sim=mapping_par_opt_to_par_sim,
-            mapping_scale_opt_to_scale_sim=mapping_scale_opt_to_scale_sim)
-
-        self.petab_importer = petab_importer
-
-    def __getstate__(self):
-        state = {}
-        for key in set(self.__dict__.keys()) - \
-                set(['amici_model', 'amici_solver', 'edatas',
-                     'preequilibration_edatas']):
-            state[key] = self.__dict__[key]
-        return state
-
-    def __setstate__(self, state):
-        self.__dict__.update(state)
-        petab_importer = state['petab_importer']
-
-        model = petab_importer.create_model()
-        solver = petab_importer.create_solver(model)
-        edatas = petab_importer.create_edatas(model)
-
-        self.amici_model = model
-        self.amici_solver = solver
-        self.edatas = edatas
-
-        if self.preprocess_edatas:
-            self.init_preequilibration_edatas(edatas)
-        else:
-            self.preequilibration_edatas = None
-
-    def __deepcopy__(self, memodict=None):
-        other = self.__class__.__new__(self.__class__)
-
-        for key in set(self.__dict__.keys()) - \
-                set(['amici_model', 'amici_solver', 'edatas',
-                     'preequilibration_edatas']):
-            other.__dict__[key] = copy.deepcopy(self.__dict__[key])
-
-        other.amici_model = amici.ModelPtr(self.amici_model.clone())
-        other.amici_solver = amici.SolverPtr(self.amici_solver.clone())
-        other.edatas = [amici.ExpData(data) for data in self.edatas]
-
-        if self.preprocess_edatas:
-            other.init_preequilibration_edatas(other.edatas)
-        else:
-            other.preequilibration_edatas = None
-
-        return other
