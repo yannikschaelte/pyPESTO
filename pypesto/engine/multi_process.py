@@ -19,7 +19,7 @@ class MultiProcessEngine(Engine):
     Parallelize the task execution using the `multiprocessing.Pool`
     environment.
 
-    Parameters
+    Attributes
     ----------
 
     n_procs: int, optional
@@ -41,9 +41,7 @@ class MultiProcessEngine(Engine):
     def execute(self, tasks):
         n_tasks = len(tasks)
 
-        pickled_tasks = []
-        for task in tasks:
-            pickled_tasks.append(pickle.dumps(task))
+        pickled_tasks = [pickle.dumps(task) for task in tasks]
 
         n_procs = min(self.n_procs, n_tasks)
         logger.info(f"Performing parallel task execution on {n_procs} "

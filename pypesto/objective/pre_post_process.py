@@ -17,13 +17,13 @@ class PrePostProcessor:
     def __init__(self):
         pass
 
-    def preprocess(self, x):
+    def preprocess(self, x):  # pylint: disable=R0201
         """
         Just return x without modifications.
         """
         return x
 
-    def postprocess(self, result):
+    def postprocess(self, result):  # pylint: disable=R0201
         """
         Convert all arrays into np.ndarrays if necessary, and return them
         without further modifications.

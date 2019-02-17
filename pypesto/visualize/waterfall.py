@@ -4,7 +4,7 @@ import numpy as np
 from .clust_color import assign_clustered_colors
 
 
-def waterfall(result, ax=None):
+def waterfall(result, ax=None, size=(18.5, 10.5)):
     """
     Plot waterfall plot.
 
@@ -17,6 +17,10 @@ def waterfall(result, ax=None):
     ax: matplotlib.Axes, optional
         Axes object to use.
 
+    size: tuple, optional
+        Figure size (width, height) in inches. Is only applied when no ax
+        object is specified
+
     Returns
     -------
 
@@ -27,10 +31,10 @@ def waterfall(result, ax=None):
     # extract cost function values from result
     fvals = result.optimize_result.get_for_key('fval')
 
-    return waterfall_lowlevel(fvals, ax)
+    return waterfall_lowlevel(fvals, ax, size)
 
 
-def waterfall_lowlevel(fvals, ax=None):
+def waterfall_lowlevel(fvals, ax=None, size=(18.5, 10.5)):
     """
     Plot waterfall plot using list of function values.
 
@@ -43,6 +47,9 @@ def waterfall_lowlevel(fvals, ax=None):
     ax: matplotlib.Axes, optional
         Axes object to use.
 
+    size: tuple, optional
+        see waterfall
+
     Returns
     -------
 
@@ -53,6 +60,8 @@ def waterfall_lowlevel(fvals, ax=None):
     # axes
     if ax is None:
         ax = plt.subplots()[1]
+        fig = plt.gcf()
+        fig.set_size_inches(*size)
 
     # parse input
     fvals = np.array(fvals)

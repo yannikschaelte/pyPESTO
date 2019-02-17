@@ -3,7 +3,7 @@ import unittest
 
 import pypesto
 import test.test_objective as test_objective
-from test.util import folder_base, model_names
+from test.petab_util import folder_base
 
 
 class EngineTest(unittest.TestCase):
@@ -20,7 +20,8 @@ class EngineTest(unittest.TestCase):
         lb = 0 * np.ones((1, 2))
         ub = 1 * np.ones((1, 2))
         problem = pypesto.Problem(objective, lb, ub)
-        pypesto.minimize(problem=problem, n_starts=9, engine=engine)
+        result = pypesto.minimize(problem=problem, n_starts=9, engine=engine)
+        self.assertTrue(len(result.optimize_result.as_list()) == 9)
 
     def test_petab(self):
         for engine in [pypesto.MultiProcessEngine()]:
@@ -28,10 +29,11 @@ class EngineTest(unittest.TestCase):
 
     def _test_petab(self, engine):
         petab_importer = pypesto.PetabImporter.from_folder(
-            folder_base + model_names[0])
+            folder_base + "Zheng_PNAS2012")
         objective = petab_importer.create_objective()
         problem = petab_importer.create_problem(objective)
-        pypesto.minimize(problem=problem, n_starts=3, engine=engine)
+        result = pypesto.minimize(problem=problem, n_starts=3, engine=engine)
+        self.assertTrue(len(result.optimize_result.as_list()) == 3)
 
 
 if __name__ == '__main__':

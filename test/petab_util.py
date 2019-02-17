@@ -10,6 +10,3 @@ except Exception:
 
 # model folder base
 folder_base = repo_base + "hackathon_contributions_new_data_format/"
-
-# model names
-model_names = ["Zheng_PNAS2012", "Boehm_JProteomeRes2014"]

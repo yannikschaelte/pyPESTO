@@ -12,6 +12,8 @@ Release notes
 * Implement multi process parallelization engine for optimization.
 * Introduction of PrePostProcessor to more reliably handle pre- and
   post-processing.
+* Update to latest petab version and fix problem with simulating for
+  multiple conditions.
 
 
 0.0.3 (2019-01-30)
