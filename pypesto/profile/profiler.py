@@ -73,7 +73,7 @@ class ProfilerResult(dict):
             self.x_path = np.zeros((x_shape[0], 1))
             self.x_path[:, 0] = x_path[:]
         else:
-            self.x_path = np.array((x_shape[0], x_shape[1]))
+            self.x_path = np.zeros((x_shape[0], x_shape[1]))
             self.x_path[:, :] = x_path[:, :]
 
         self.fval_path = np.array(fval_path)

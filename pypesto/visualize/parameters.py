@@ -4,7 +4,8 @@ import numpy as np
 from .clust_color import assign_clustered_colors
 
 
-def parameters(result, ax=None, free_indices_only=True, lb=None, ub=None):
+def parameters(result, ax=None, free_indices_only=True, lb=None, ub=None,
+               size=None):
     """
     Plot parameter values.
 
@@ -24,6 +25,10 @@ def parameters(result, ax=None, free_indices_only=True, lb=None, ub=None):
     lb, ub: ndarray, optional
         If not None, override result.problem.lb, problem.problem.ub.
         Dimension either result.problem.dim or result.problem.dim_full.
+
+    size: tuple, optional
+        Figure size (width, height) in inches. Is only applied when no ax
+        object is specified
 
     Returns
     -------
@@ -53,10 +58,11 @@ def parameters(result, ax=None, free_indices_only=True, lb=None, ub=None):
         ub = result.problem.get_full_vector(ub)
 
     return parameters_lowlevel(xs=xs, fvals=fvals, lb=lb, ub=ub,
-                               x_labels=x_labels, ax=ax)
+                               x_labels=x_labels, ax=ax, size=size)
 
 
-def parameters_lowlevel(xs, fvals, lb=None, ub=None, x_labels=None, ax=None):
+def parameters_lowlevel(xs, fvals, lb=None, ub=None, x_labels=None, ax=None,
+                        size=None):
     """
     Plot parameters plot using list of parameters.
 
@@ -79,6 +85,9 @@ def parameters_lowlevel(xs, fvals, lb=None, ub=None, x_labels=None, ax=None):
     ax: matplotlib.Axes, optional
         Axes object to use.
 
+    size: tuple, optional
+        see parameters
+
     Returns
     -------
 
@@ -86,12 +95,18 @@ def parameters_lowlevel(xs, fvals, lb=None, ub=None, x_labels=None, ax=None):
         The plot axes.
     """
 
-    if ax is None:
-        ax = plt.subplots()[1]
-
     # parse input
     xs = np.array(xs)
     fvals = np.array(fvals)
+
+    if size is None:
+        # 0.5 inch height per parameter
+        size = (18.5, xs.shape[1]/2)
+
+    if ax is None:
+        ax = plt.subplots()[1]
+        fig = plt.gcf()
+        fig.set_size_inches(*size)
 
     # assign color
     colors = assign_clustered_colors(fvals)

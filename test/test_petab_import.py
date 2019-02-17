@@ -8,7 +8,8 @@ import numpy as np
 
 import petab
 import pypesto
-from test.util import folder_base, model_names
+from test.petab_util import folder_base
+import amici
 
 
 class PetabImportTest(unittest.TestCase):
@@ -21,7 +22,7 @@ class PetabImportTest(unittest.TestCase):
         cls.obj_edatas = []
 
     def test_0_import(self):
-        for model_name in model_names:
+        for model_name in ["Zheng_PNAS2012", "Boehm_JProteomeRes2014"]:
             petab_problem = petab.Problem.from_folder(
                 folder_base + model_name)
             self.petab_problems.append(petab_problem)
@@ -40,7 +41,7 @@ class PetabImportTest(unittest.TestCase):
             self.assertEqual(set(model_obs_ids),
                              set(problem_obs_ids))
 
-            # TODO continue
+            # also other checks would be possible here
 
     def test_2_simulate(self):
         for petab_importer in self.petab_importers:
@@ -68,7 +69,81 @@ class PetabImportTest(unittest.TestCase):
                 result.optimize_result.get_for_key('fval')[0]))
 
 
+class SpecialFeaturesTest(unittest.TestCase):
+
+    def test_replicates(self):
+        """
+        Use a model that has replicates and check that all data points are
+        inserted.
+        """
+        # import a model with replicates at some time points and observables
+        importer = pypesto.PetabImporter.from_folder(
+            folder_base + "Schwen_PONE2014")
+
+        # create amici.ExpData list
+        edatas = importer.create_edatas()
+
+        # convert to dataframe
+        amici_df = amici.getDataObservablesAsDataFrame(
+            importer.create_model(), edatas)
+
+        # extract original measurement df
+        meas_df = importer.petab_problem.measurement_df
+
+        # find time points
+        amici_times = sorted(amici_df.time.unique().tolist())
+        meas_times = sorted(meas_df.time.unique().tolist())
+
+        # assert same time points
+        for amici_time, meas_time in zip(amici_times, meas_times):
+            self.assertTrue(np.isclose(amici_time, meas_time))
+
+        # extract needed stuff from amici df
+        amici_df = amici_df[[col for col in amici_df.columns
+                             if col == 'time' or col.startswith('observable_')
+                             and not col.endswith("_std")]]
+
+        # find observable ids
+        amici_obs_ids = [col for col in amici_df.columns if col != 'time']
+        amici_obs_ids = [val.replace("observable_", "")
+                         for val in amici_obs_ids]
+        amici_obs_ids = sorted(amici_obs_ids)
+        meas_obs_ids = sorted(meas_df.observableId.unique().tolist())
+        for amici_obs_id, meas_obs_id in zip(amici_obs_ids, meas_obs_ids):
+            self.assertEqual(amici_obs_id, meas_obs_id)
+
+        # iterate over time points
+        for time in meas_times:
+            amici_df_for_time = amici_df[amici_df.time == time]
+            amici_df_for_time = amici_df_for_time[
+                [col for col in amici_df.columns if col != 'time']]
+
+            meas_df_for_time = meas_df[meas_df.time == time]
+
+            # iterate over observables
+            for obs_id in meas_obs_ids:
+                amici_df_for_obs = amici_df_for_time["observable_" + obs_id]
+                meas_df_for_obs = meas_df_for_time[
+                    meas_df_for_time.observableId == obs_id]
+
+                # extract non-nans and sort
+                amici_vals = amici_df_for_obs.values.flatten().tolist()
+                amici_vals = sorted([val for val in amici_vals
+                                     if np.isfinite(val)])
+
+                meas_vals = meas_df_for_obs.measurement \
+                    .values.flatten().tolist()
+                meas_vals = sorted([val for val in meas_vals
+                                    if np.isfinite(val)])
+
+                # test if the measurement data coincide for the given time
+                # point
+                for amici_val, meas_val in zip(amici_vals, meas_vals):
+                    self.assertTrue(np.isclose(amici_val, meas_val))
+
+
 if __name__ == '__main__':
     suite = unittest.TestSuite()
     suite.addTest(PetabImportTest())
+    suite.addTest(SpecialFeaturesTest())
     unittest.main()

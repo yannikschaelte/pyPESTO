@@ -8,6 +8,7 @@ describing the problem to be solved.
 """
 
 import numpy as np
+import pandas as pd
 import copy
 
 
@@ -322,3 +323,23 @@ class Problem:
         x = x_full[np.ix_(self.x_free_indices, self.x_free_indices)]
 
         return x
+
+    def print_parameter_summary(self):
+        """
+        Prints a summary of what parameters are being optimized and
+        what parameter boundaries are
+        """
+
+        print(
+            pd.DataFrame(
+                index=self.x_names,
+                data={
+                    'free': [
+                        idx not in self.x_fixed_indices
+                        for idx in range(self.dim_full)
+                    ],
+                    'lb': self.lb_full,
+                    'ub': self.ub_full
+                }
+            )
+        )

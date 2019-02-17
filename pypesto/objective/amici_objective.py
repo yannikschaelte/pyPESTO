@@ -106,8 +106,8 @@ class AmiciObjective(Objective):
             options=options
         )
 
-        self.amici_model = amici_model
-        self.amici_solver = amici_solver
+        self.amici_model = amici.ModelPtr(amici_model.clone())
+        self.amici_solver = amici.SolverPtr(amici_solver.clone())
 
         # make sure the edatas are a list of edata objects
         if isinstance(edatas, amici.amici.ExpData):
