@@ -240,7 +240,7 @@ class PetabImporter:
             # extract rows for condition
             df_for_condition = petab.core.get_rows_for_condition(
                 measurement_df, condition)
-            print(df_for_condition)
+
             # make list of all timepoints for which measurements exist
             timepoints = sorted(
                 df_for_condition.time.unique().astype(float))
@@ -260,8 +260,8 @@ class PetabImporter:
                 edata, condition_df, fixed_parameter_ids, condition)
 
             # create measurements and sigmas
-            _add_measurements_and_sigmas(edata, timepoints,
-                timepoints_w_reps, df_for_condition, observable_ids)
+            _add_measurements_and_sigmas(edata, df_for_condition, timepoints,
+                timepoints_w_reps, observable_ids)
 
             # append edata to edatas list
             edatas.append(edata)
@@ -577,8 +577,8 @@ def _get_timepoints_w_reps(df_for_condition, timepoints):
     return timepoints_w_reps
 
 
-def _add_measurements_and_sigmas(edata, timepoints, timepoints_w_reps,
-        df_for_condition, observable_ids):
+def _add_measurements_and_sigmas(edata, df_for_condition, timepoints,
+        timepoints_w_reps, observable_ids):
     """
     Get measurements and sigmas to add to edata.
     """
@@ -618,8 +618,8 @@ def _add_measurements_and_sigmas(edata, timepoints, timepoints_w_reps,
                         observable_ix] = measurement.noiseParameters
 
     # fill measurements and sigmas into edata
-    edata.setObservedData(y)
-    edata.setObservedDataStdDev(sigma_y)
+    edata.setObservedData(y.flatten())
+    edata.setObservedDataStdDev(sigma_y.flatten())
 
 
 class PetabAmiciObjective(AmiciObjective):
