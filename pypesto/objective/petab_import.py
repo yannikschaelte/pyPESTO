@@ -240,7 +240,7 @@ class PetabImporter:
             # extract rows for condition
             df_for_condition = petab.core.get_rows_for_condition(
                 measurement_df, condition)
-
+            print(df_for_condition)
             # make list of all timepoints for which measurements exist
             timepoints = sorted(
                 df_for_condition.time.unique().astype(float))
@@ -248,16 +248,9 @@ class PetabImporter:
             # init edata object
             edata = amici.ExpData(model.get())
 
-            # find rep numbers of time points
-            timepoints_w_reps = []
-            for time in timepoints:
-                # subselect for time
-                df_for_time = df_for_condition[df_for_condition.time == time]
-                # rep number is maximum over rep numbers for observables
-                n_reps = max(df_for_time.groupby(
-                    ['observableId', 'time']).size())
-                # append time point n_rep times
-                timepoints_w_reps.extend([time] * n_reps)
+            # list of timepoints with number-of-datapoints replicates
+            timepoints_w_reps = _get_timepoints_w_reps(
+                df_for_condition, timepoints)
 
             # set time points in edata
             edata.setTimepoints(timepoints_w_reps)
@@ -266,45 +259,9 @@ class PetabImporter:
             _handle_fixed_parameters(
                 edata, condition_df, fixed_parameter_ids, condition)
 
-            # prepare measurement matrix
-            y = np.full(shape=(edata.nt(), edata.nytrue()), fill_value=np.nan)
-            # prepare sigma matrix
-            sigma_y = np.full(
-                shape=(edata.nt(), edata.nytrue()),
-                fill_value=np.nan)
-
-            # add measurements and sigmas
-            # iterate over time points
-            for time in timepoints:
-                # subselect for time
-                df_for_time = df_for_condition[df_for_condition.time == time]
-                time_ix_0 = timepoints_w_reps.index(time)
-
-                # remember used time indices for each observable
-                time_ix_for_obs_ix = {}
-
-                # iterate over measurements
-                for _, measurement in df_for_time.iterrows():
-                    # extract observable index
-                    observable_ix = observable_ids.index(
-                        f'observable_{measurement.observableId}')
-
-                    # update time index for observable
-                    if observable_ix in time_ix_for_obs_ix:
-                        time_ix_for_obs_ix[observable_ix] += 1
-                    else:
-                        time_ix_for_obs_ix[observable_ix] = time_ix_0
-
-                    # fill observable and possibly noise parameter
-                    y[time_ix_for_obs_ix[observable_ix],
-                        observable_ix] = measurement.measurement
-                    if isinstance(measurement.noiseParameters, numbers.Number):
-                        sigma_y[time_ix_for_obs_ix[observable_ix],
-                                observable_ix] = measurement.noiseParameters
-
-            # fill measurements and sigmas into edata
-            edata.setObservedData(y.flatten())
-            edata.setObservedDataStdDev(sigma_y.flatten())
+            # create measurements and sigmas
+            _add_measurements_and_sigmas(edata, timepoints,
+                timepoints_w_reps, df_for_condition, observable_ids)
 
             # append edata to edatas list
             edatas.append(edata)
@@ -599,6 +556,70 @@ def _find_model_name(output_folder):
     Just re-use the last part of the output folder.
     """
     return os.path.split(os.path.normpath(output_folder))[-1]
+
+
+def _get_timepoints_w_reps(df_for_condition, timepoints):
+    """
+    Create list of timepoints from `timepoints`, each replicated as often as
+    there exist data for it in `df_for_condition`.
+    """
+    timepoints_w_reps = []
+
+    for time in timepoints:
+        # subselect for time
+        df_for_time = df_for_condition[df_for_condition.time == time]
+        # rep number is maximum over rep numbers for observables
+        n_reps = max(df_for_time.groupby(
+            ['observableId', 'time']).size())
+        # append time point n_rep times
+        timepoints_w_reps.extend([time] * n_reps)
+
+    return timepoints_w_reps
+
+
+def _add_measurements_and_sigmas(edata, timepoints, timepoints_w_reps,
+        df_for_condition, observable_ids):
+    """
+    Get measurements and sigmas to add to edata.
+    """
+    # prepare measurement matrix
+    y = np.full(shape=(edata.nt(), edata.nytrue()), fill_value=np.nan)
+    # prepare sigma matrix
+    sigma_y = np.full(
+        shape=(edata.nt(), edata.nytrue()),
+        fill_value=np.nan)
+
+    # iterate over time points
+    for time in timepoints:
+        # subselect for time
+        df_for_time = df_for_condition[df_for_condition.time == time]
+        time_ix_0 = timepoints_w_reps.index(time)
+
+        # remember used time indices for each observable
+        time_ix_for_obs_ix = {}
+
+        # iterate over measurements
+        for _, measurement in df_for_time.iterrows():
+            # extract observable index
+            observable_ix = observable_ids.index(
+                f'observable_{measurement.observableId}')
+
+            # update time index for observable
+            if observable_ix in time_ix_for_obs_ix:
+                time_ix_for_obs_ix[observable_ix] += 1
+            else:
+                time_ix_for_obs_ix[observable_ix] = time_ix_0
+
+            # fill observable and possibly noise parameter
+            y[time_ix_for_obs_ix[observable_ix],
+                observable_ix] = measurement.measurement
+            if isinstance(measurement.noiseParameters, numbers.Number):
+                sigma_y[time_ix_for_obs_ix[observable_ix],
+                        observable_ix] = measurement.noiseParameters
+
+    # fill measurements and sigmas into edata
+    edata.setObservedData(y)
+    edata.setObservedDataStdDev(sigma_y)
 
 
 class PetabAmiciObjective(AmiciObjective):
