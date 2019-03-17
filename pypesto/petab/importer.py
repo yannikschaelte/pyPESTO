@@ -15,7 +15,9 @@ import petab
 
 from ..problem import Problem
 from ..objective import AmiciObjective
-from ..hierarchical import HierarchicalProblem
+from ..hierarchical import (HierarchicalProblem,
+                            HierarchicalForwardAmiciCalculator,
+                            HierarchicalAdjointAmiciCalculator)
 from ..objective.amici_calculator import simple_amici_calculate
 
 try:
