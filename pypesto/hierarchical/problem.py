@@ -16,10 +16,12 @@ class HierarchicalParameter:
 
 class HierarchicalProblem:
 
-    def __init__(self, xs):
+    def __init__(self, xs = None):
         """
         s_ids, b_ids, sigma_ids should all be estimated parameters.
         """
+        if xs is None:
+            xs = []
         self.xs = xs
 
     @staticmethod
@@ -30,14 +32,14 @@ class HierarchicalProblem:
             type_ = None
             default_val_ = None
             if x.startswith('scaling_'):
-                x_type = HierarchicalParameter.SCALING
-                default_val = 1.0
+                type_ = HierarchicalParameter.SCALING
+                default_val_ = 1.0
             elif x.startswith('offset_'):
-                x_type = HierarchicalParameter.OFFSET
-                default_val = 0.0
+                type_ = HierarchicalParameter.OFFSET
+                default_val_ = 0.0
             elif x.startswith('sd_') or x.startswith('sigma_'):
-                x_type = HierarchicalParameter.SIGMA
-                default_val = 1.0
+                type_ = HierarchicalParameter.SIGMA
+                default_val_ = 1.0
             if type_:
                 x = HierarchicalParameter(
                     id_=x, ix_=ix, type_=type_, default_val_=default_val_)

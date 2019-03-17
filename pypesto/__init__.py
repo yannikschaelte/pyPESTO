@@ -27,6 +27,7 @@ from .profile import (parameter_profile,
                       ProfilerResult)
 from .engine import (SingleCoreEngine,
                      MultiProcessEngine)
+from .hierarchical import HierarchicalProblem
 
 
 __all__ = [
@@ -57,4 +58,6 @@ __all__ = [
     # engine
     "SingleCoreEngine",
     "MultiProcessEngine",
+    # hierarchical
+    "HierarchicalProblem",
 ]

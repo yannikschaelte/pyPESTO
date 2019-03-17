@@ -352,12 +352,12 @@ class PetabImporter:
 
         # hierarchical problem
         if hierarchical_problem is None:
-            hierarchical_problem = HierarchicalProblem.from_parameter_df(
-                self.petab_problem.parameter_df)
+            hierarchical_problem = HierarchicalProblem()
         self.fill_hierarchical_problem(
             model, simulation_conditions, hierarchical_problem)
 
         # calculator
+        print(hierarchical_problem.xs)
         if hierarchical_problem.is_empty():
             calculator = simple_amici_calculate
         elif solver.getSensitivityMethod() == amici.SensitivityMethod_forward:
