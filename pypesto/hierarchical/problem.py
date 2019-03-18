@@ -1,3 +1,9 @@
+import logging
+
+
+logger = logging.getLogger(__name__)
+
+
 class HierarchicalParameter:
 
     SCALING = 'SCALING'
@@ -10,6 +16,10 @@ class HierarchicalParameter:
         self.type = type_
         self.default_val = default_val_
         self.indices = []
+
+        logger.info(
+            f"Created HierarchicalParameter (id={self.id}, ix={self.ix}, "
+            f"type={self.type}, default_val={self.default_val}).")
 
     def append(self, condition_ix, time_ix, observable_ix):
         self.indices.append((condition_ix, time_ix, observable_ix))

@@ -7,6 +7,7 @@ from ..objective.amici_util import(
     add_sim_hess_to_opt_hess,
     sim_sres_to_opt_sres,
 )
+from .problem import HierarchicalParameter, HierarchicalProblem
 
 try:
     import amici
@@ -46,12 +47,19 @@ class HierarchicalForwardAmiciCalculator(HierarchicalAmiciCalculator):
             num_threads=min(obj.n_threads, len(obj.edatas)),
         )
 
+        if any([rdata['status'] < 0.0 for rdata in rdatas]):
+            return obj.get_error_output(rdatas)
+
+        # edatas to numpy arrays
+        # TODO cache
+        edatas = [amici.numpy.edataToNumPyArrays(edata)
+                  for edata in obj.edatas]
+
+        # compute optimal parameters
+        scalings = self.problem.get_xs_for_type(HierarchicalParameter.SCALING)
+
         for data_ix, rdata in enumerate(rdatas):
             log_simulation(data_ix, rdata)
-
-            # check if the computation failed
-            if rdata['status'] < 0.0:
-                return obj.get_error_output(rdatas)
 
             # compute objective
             if mode == MODE_FUN:
