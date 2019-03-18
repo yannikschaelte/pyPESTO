@@ -1,32 +1,8 @@
 import logging
-
+from .parameter import HierarchicalParameter
 
 logger = logging.getLogger(__name__)
 
-
-class HierarchicalParameter:
-
-    SCALING = 'SCALING'
-    OFFSET = 'OFFSET'
-    SIGMA = 'SIGMA'
-
-    def __init__(self, id_, ix_, type_, default_val_):
-        self.id = id_
-        self.ix = ix_
-        self.type = type_
-        self.default_val = default_val_
-        self.indices = []
-
-        logger.info(
-            f"Created HierarchicalParameter (id={self.id}, ix={self.ix}, "
-            f"type={self.type}, default_val={self.default_val}).")
-
-    def append(self, condition_ix, time_ix, observable_ix):
-        self.indices.append((condition_ix, time_ix, observable_ix))
-        # TODO also need to remember time for adjoints
-
-    def iterate(self):
-        return (ix for ix in self.indices)
 
 class HierarchicalProblem:
 
@@ -92,3 +68,9 @@ class HierarchicalProblem:
         ixs = self.s_ixs + self.b_ixs + self.sigma_ixs
         default_vals = [1.0] * len(self.s_ids) + [0.0] * len(self.b_ids) + [1.0] * len(self.sigma_ids)
         return ixs, default_vals
+
+    def validate(self):
+        """
+        Check that assumptions are fulfilled.
+        """
+        pass

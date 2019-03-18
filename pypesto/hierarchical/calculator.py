@@ -7,7 +7,8 @@ from ..objective.amici_util import(
     add_sim_hess_to_opt_hess,
     sim_sres_to_opt_sres,
 )
-from .problem import HierarchicalParameter, HierarchicalProblem
+from .parameter import HierarchicalParameter
+from .problem import HierarchicalProblem
 
 try:
     import amici
@@ -56,8 +57,9 @@ class HierarchicalForwardAmiciCalculator(HierarchicalAmiciCalculator):
                   for edata in obj.edatas]
 
         # compute optimal parameters
-        scalings = self.problem.get_xs_for_type(HierarchicalParameter.SCALING)
-
+        optimal_scalings = compute_optimal_scaling_matrix(self.problem, edatas, rdatas)
+        
+        # compute likelihood and derivatives
         for data_ix, rdata in enumerate(rdatas):
             log_simulation(data_ix, rdata)
 
@@ -110,3 +112,55 @@ class HierarchicalAdjointAmiciCalculator(HierarchicalAmiciCalculator):
         raise NotImplementedError(
             "Combining adjoints and hierarchical optimization is not yet "
             "supported.")
+
+
+def compute_optimal_scaling_matrix(problem, edatas, rdatas):
+    optimal_scalings = compute_optimal_scalings(problem, edatas, rdatas)
+    matrix = matrix_like(rdatas, val=1.0)
+    for x, opt_s in zip(problem.get_xs_for_type(HierarchicalParameter.SCALING), optimal_scalings):
+        apply_optimal_scaling(x, opt_s, matrix)
+    return matrix
+
+
+def compute_optimal_scalings(problem, edatas, rdatas):
+    optimal_scalings = []
+    for x in problem.get_xs_for_type(HierarchicalParameter.SCALING):
+        s_opt = compute_optimal_scaling(x, edatas, rdatas)
+        optimal_scalings.append(s_opt)
+
+
+def compute_optimal_scaling(x, edatas, rdatas):
+    num = 0.0
+    den = 0.0
+
+    for ix in x.iterate():
+        condition_ix, time_ix, observable_ix = ix
+        y = edatas[condition_ix]['observedData'][time_ix, observable_ix]
+        h = rdatas[condition_ix]['y'][time_ix, observable_ix]
+
+        if np.isnan(y) or np.isnan(h):
+            continue
+
+        num += (y - h) * h
+        den += h**2
+
+    # TODO check for 0.0
+
+    return num / den
+
+
+def matrix_like(rdatas, val):
+    matrix = []
+    for rdata in rdatas:
+        matrix.append(np.full(rdata['y'].shape, fill_value=val))
+    return matrix
+
+
+def apply_optimal_scalings(problem, optimal_scalings, matrix):
+    for x, opt_s in zip(problem.get_xs_for_type(HierarchicalParameter.SCALING), optimal_scalings):
+        apply_optimal_scaling(x, opt_s, matrix)
+
+
+def apply_optimal_scaling(x, opt_s, matrix):
+    for condition_ix, time_ix, observable_ix in x.iterate():
+        matrix[condition_ix][time_ix, observable_ix] = opt_s
