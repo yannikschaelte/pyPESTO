@@ -9,10 +9,14 @@ class HierarchicalParameter:
         self.ix = ix_
         self.type = type_
         self.default_val = default_val_
-        self.indices = {}
+        self.indices = []
 
     def append(self, condition_ix, time_ix, observable_ix):
-        self.indices.setdefault(condition_ix, {}).setdefault(time_ix, []).append(observable_ix)
+        self.indices.append((condition_ix, time_ix, observable_ix))
+        # TODO also need to remember time for adjoints
+
+    def iterate(self):
+        return (ix for ix in self.indices)
 
 class HierarchicalProblem:
 
@@ -26,6 +30,13 @@ class HierarchicalProblem:
 
     @staticmethod
     def from_parameter_df(df):
+        """
+        Create list of hierarchical parameters from parameter df
+        based on name conventions.
+        """
+        # TODO need to make sure ordering is the same as in 
+        # petab_problem.get_optimization_parameters
+
         xs = []
 
         for ix, x in enumerate(df.reset_index()['parameterId']):

@@ -1,3 +1,4 @@
 from .problem import HierarchicalProblem
-from .calculator import (HierarchicalForwardAmiciCalculator,
+from .calculator import (HierarchicalAmiciCalculator,
+                         HierarchicalForwardAmiciCalculator,
                          HierarchicalAdjointAmiciCalculator)

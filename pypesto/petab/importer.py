@@ -16,6 +16,7 @@ import petab
 from ..problem import Problem
 from ..objective import AmiciObjective
 from ..hierarchical import (HierarchicalProblem,
+                            HierarchicalAmiciCalculator,
                             HierarchicalForwardAmiciCalculator,
                             HierarchicalAdjointAmiciCalculator)
 from ..objective.amici_calculator import simple_amici_calculate
@@ -406,16 +407,17 @@ class PetabImporter:
         return obj
 
     def create_problem(self, objective):
+        # handle hierarchical parameters as fixed parameters
         x_fixed_ixs = self.petab_problem.x_fixed_indices
         x_fixed_vals = self.petab_problem.x_fixed_vals
-        #hierarchical_ixs, hierarchical_default_vals = \
-        #    objective.hierarchical_problem.get_all_ixs_and_default_vals()
-        #for ix, val in zip(hierarchical_ixs, hierarchical_default_vals):
-        #    if ix in x_fixed_ixs:
-        #        x_fixed_vals[x_fixed_ixs.index(ix)] = val
-        #    else:
-        #        x_fixed_ixs.append(ix)
-        #        x_fixed_vals.append(val)
+
+        if isinstance(objective.calculator, HierarchicalAmiciCalculator):
+            for x in objective.calculator.problem.xs:
+                if x.ix in x_fixed_ixs:
+                    x_fixed_vals[x_fixed_ixs.index(x.ix)] = x.default_val
+                else:
+                    x_fixed_ixs.append(x.ix)
+                    x_fixed_vals.append(x.default_val)
 
         problem = Problem(objective=objective,
                           lb=self.petab_problem.lb,

@@ -255,7 +255,41 @@ class AmiciObjective(Objective):
             sensi_orders,
             mode
     ):
-        return self.calculator(self, x, sensi_orders, mode)
+	# amici is built such that only the maximum sensitivity is required,
+        # the lower orders are then automatically computed
+        sensi_order = min(max(sensi_orders), 1)
+        # order 2 currently not implemented, we are using the FIM
+
+        # check if the requested sensitivities can be computed
+        if sensi_order > self.max_sensi_order:
+            raise Exception("Sensitivity order not allowed.")
+
+        # loop over experimental data
+        for data_ix, edata in enumerate(self.edatas):
+
+            # set model parameter scale for condition index
+            self.set_parameter_scale(data_ix)
+
+            # set parameters in model, according to mapping
+            self.set_par_sim_for_condition(data_ix, x)
+
+            # set parameter list according to mapping
+            self.set_plist_for_condition(data_ix)
+
+            if self.guess_steadystate and \
+                    self.steadystate_guesses['fval'] < np.inf:
+                self.apply_steadystate_guess(data_ix, x)
+
+        ret = self.calculator(self, x, sensi_order, mode)
+
+        # check wether we should update data for preequilibration guesses
+        if self.guess_steadystate and \
+                ret[FVAL] <= self.steadystate_guesses['fval']:
+            self.steadystate_guesses['fval'] = ret[FVAL]
+            for data_ix, rdata in enumerate(ret[RDATAS]):
+                self.store_steadystate_guess(data_ix, x, rdata)
+
+        return ret
 
     def get_error_output(self, rdatas):
         if not self.amici_model.nt():
