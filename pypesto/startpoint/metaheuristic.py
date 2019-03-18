@@ -36,11 +36,13 @@ class MetaheuristicPreSearch(dict):
     n_generations: int, optional
         Number of generations in the pre-search phase
 
-    diversity: float, optional
-        number between 0 and 1, which specifies how the new population
-        should be chosen among the created offspring:
-        high: Take more parameter with good values
-        low: Take more parameters with diverse values
+    weighting: tuple of float, optional
+        numbers between 0 and 1, which add up to less or equal than 1,
+        which specify how the new population should be chosen among the
+        created offspring:
+        first number: fraction of fittest values that should survive
+        second number: fraction of diverse values that should survive
+        rest: will be chosen balanced among the remaining guesses
     """
 
     def __init__(self,
@@ -51,7 +53,7 @@ class MetaheuristicPreSearch(dict):
                  sample_ub=None,
                  population_size=None,
                  n_generations=None,
-                 diversity=0.3,
+                 diversity=None,
                  ):
         super().__init__()
 
@@ -96,7 +98,20 @@ class MetaheuristicPreSearch(dict):
         if n_generations is not None:
             self.n_generations = n_generations
         else:
-            self.n_generations = np.ceil(np.min([10, np.sqrt(self.dim)]))
+            self.n_generations = np.ceil(np.min([5, np.sqrt(self.dim)]))
+
+        # assign diversity
+        if diversity is None:
+            self.diversity = 0.3
+        else:
+            self.diversity = diversity
+
+        # compute proportions of new generation: How many offspring,
+        # how many fit guesses and how many diverse guesses we will have
+        self.offspring_pop = np.floor(0.4 * self.population_size)
+        self.fit_pop = np.floor(0.3 * self.population_size)
+        self.div_pop = self.population_size - offspring_pop - fittest_pop
+
 
     def __getattr__(self, key):
         try:
@@ -123,7 +138,7 @@ class MetaheuristicPreSearch(dict):
         return state
 
 
-    def get_next_generation(self):
+    def get_next_generation(self, problem):
         """
         Creates the next generation from the current state of the system
 
@@ -133,26 +148,104 @@ class MetaheuristicPreSearch(dict):
         self.sort_population()
 
         # take the fittest 40%, create offspring from that
-        self.generate_offspring()
+        self.generate_offspring(problem)
 
         # take another 30%, sample points somewhere close by
-        self.sample_fittest()
+        self.sample_fittest(problem)
 
         # take the remaining 30%, sample diverse guesses
-        self.sample_diversity()
+        self.sample_diversity(problem)
 
         # choose the next generation among the created and the current guesses
         self.choose_guesses()
 
 
-
     def sort_population(self):
-        # sort the current parameter vectors by objective value
+        """
+        sort the current parameter vectors by objective value
+        """
+
         population_order = np.argsort(self.fvals)
         self.fvals = self.fvals[population_order]
         self.xs = self.xs[population_order]
         self.div = self.div[population_order]
 
+
+    def generate_offspring(self, problem):
+        """
+        finds parameter guesses which are close and generates the offspring
+        from the found pairs
+        """
+
+        # create pairings of points
+        pairs = []
+
+        # loop until we have enough
+        not_enough_pairs = True
+        i_guess = 0
+        while not_enough_pairs:
+            # find closest points for creating offspring
+            distances = get_distances(self.xs, self.xs[i_guess])
+            dist_order = np.argsort(np.array(distances))
+
+            # iterate to ensure that this pairing is really new
+            j = 0
+            while (i_guess, dist_order[j]) in pairs or \
+                    (dist_order[j], i_guess) in pairs:
+                j += 1
+
+            # append to pairs
+            pairs.append((i_guess, dist_order[0]))
+
+            # increase counter
+            i_guess += 1
+
+            # stop if enough pairs were created
+            if i_guess == self.offspring_pop:
+                not_enough_pairs = False
+
+        for i_guess in range(self.offspring_pop):
+            # generate offspring points
+            point_not_evaluable = True
+            while point_not_evaluable:
+                x = create_offspring_from_pair(pairs[i_guess])
+
+                # check whether guess could be evaluated
+                fval = problem.objective(x)
+                if np.isfinite(fval):
+                    point_not_evaluable = False
+
+                # append
+                self.next_xs.append(x)
+                self.next_fvals.append(fval)
+
+
+    def sample_fittest(self, problem):
+        """
+        sample points close to fittest individuals
+        """
+
+        for i_guess in range(self.fit_pop):
+            # sample point
+            point_not_evaluable = True
+            while point_not_evaluable:
+                x = np.random.multivariate_normal(self.xs[i_guess],
+                                                  np.diag(self.state_scale))
+
+                # check whether guess could be evaluated
+                fval = problem.objective(x)
+                if np.isfinite(fval):
+                    point_not_evaluable = False
+
+            # append
+            self.next_xs.append(x)
+            self.next_fvals.append(fval)
+
+
+    def create_offspring_from_pair(self, pair):
+        center = 0.5 * (pair[0] + pair[1])
+        variance = 0.33 * np.absolute(pair[0] - pair[1])
+        return np.random.multivariate_normal(center, np.diag(variance))
 
 def metaheuristic(
         problem,
@@ -205,10 +298,24 @@ def metaheuristic(
     # iterate over the generations
     for i_gen in range(state.n_generations):
         # do evolution step
-        state.get_next_generation()
+        state.get_next_generation(problem)
 
     # create numpy array from guesses
     startpoints = np.array(state.xs)
 
     return startpoints
 
+
+def get_distances(xs, x):
+    # create return value
+    distances = []
+
+    for ix in xs:
+        # skip if x was part of xs
+        if x == ix:
+            continue
+
+        # compute distances
+        distances.append(np.linalg.norm(x - ix))
+
+    return distances
