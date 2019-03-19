@@ -1,4 +1,6 @@
 from ..startpoint import latin_hypercube, uniform, resample_startpoints
+import copy
+from np.linalg import norm
 
 
 class MetaheuristicPreSearch(dict):
@@ -67,6 +69,11 @@ class MetaheuristicPreSearch(dict):
         self.fvals = []
         self.div = []
 
+        # create the state of the system for next generation
+        self.next_xs = []
+        self.next_fvals = []
+        self.next_divs = []
+
         # create sample bounds if needed
         if sample_lb is None and sample_ub is None:
             # create sample bounds
@@ -101,17 +108,16 @@ class MetaheuristicPreSearch(dict):
             self.n_generations = np.ceil(np.min([5, np.sqrt(self.dim)]))
 
         # assign diversity
-        if diversity is None:
-            self.diversity = 0.3
+        if weighting is None:
+            self.weighting = (0.3, 0.3)
         else:
-            self.diversity = diversity
+            self.weighting = weighting
 
         # compute proportions of new generation: How many offspring,
         # how many fit guesses and how many diverse guesses we will have
         self.offspring_pop = np.floor(0.4 * self.population_size)
         self.fit_pop = np.floor(0.3 * self.population_size)
         self.div_pop = self.population_size - offspring_pop - fittest_pop
-
 
     def __getattr__(self, key):
         try:
@@ -137,7 +143,6 @@ class MetaheuristicPreSearch(dict):
         state = MetaheuristicPreSearch(**maybe_state)
         return state
 
-
     def get_next_generation(self, problem):
         """
         Creates the next generation from the current state of the system
@@ -147,18 +152,20 @@ class MetaheuristicPreSearch(dict):
         # sort according to quality of guesses
         self.sort_population()
 
-        # take the fittest 40%, create offspring from that
+        # create list of new guesses based on last state
+        self.generate_new_list()
+
+        # take the fittest 40%, create offspring from that, add to list
         self.generate_offspring(problem)
 
-        # take another 30%, sample points somewhere close by
+        # take another 30%, sample points somewhere close by, add to list
         self.sample_fittest(problem)
 
-        # take the remaining 30%, sample diverse guesses
+        # take the remaining 30%, sample diverse guesses, add to list
         self.sample_diversity(problem)
 
         # choose the next generation among the created and the current guesses
         self.choose_guesses()
-
 
     def sort_population(self):
         """
@@ -168,8 +175,15 @@ class MetaheuristicPreSearch(dict):
         population_order = np.argsort(self.fvals)
         self.fvals = self.fvals[population_order]
         self.xs = self.xs[population_order]
-        self.div = self.div[population_order]
+        self.divs = self.divs[population_order]
 
+    def generate_new_list(self):
+        """
+        create pool of guesses for next generation
+        """
+
+        self.next_xs = copy.deepcopy(self.xs)
+        self.next_fvals = copy.deepcopy(self.fvals)
 
     def generate_offspring(self, problem):
         """
@@ -219,7 +233,6 @@ class MetaheuristicPreSearch(dict):
                 self.next_xs.append(x)
                 self.next_fvals.append(fval)
 
-
     def sample_fittest(self, problem):
         """
         sample points close to fittest individuals
@@ -241,11 +254,40 @@ class MetaheuristicPreSearch(dict):
             self.next_xs.append(x)
             self.next_fvals.append(fval)
 
+    def sample_diversity(self, problem):
+        # compute diversity scores for points
+        for x in next_xs:
+            dists = get_distances(next_xs, x)
+            self.next_divs.append(sum([norm(dist) for dist in dists]))
+
+        # compute a median div, in order to make sure that new points show a
+        #  higher diversity than the meadian later on
+        median_div = np.median(self.next_divs)
+
+        for i_guess in range(self.div_pop):
+            # sample point
+            point_not_evaluable = True
+            while point_not_evaluable:
+                x = np.random.randon( )
+
+                # check for diversity
+                
+
+                # check whether guess could be evaluated
+                fval = problem.objective(x)
+                if np.isfinite(fval):
+                    point_not_evaluable = False
+
+            # append
+            self.next_xs.append(x)
+            self.next_fvals.append(fval)
+
 
     def create_offspring_from_pair(self, pair):
         center = 0.5 * (pair[0] + pair[1])
         variance = 0.33 * np.absolute(pair[0] - pair[1])
         return np.random.multivariate_normal(center, np.diag(variance))
+
 
 def metaheuristic(
         problem,
@@ -292,7 +334,7 @@ def metaheuristic(
     startpoints = assign_startpoints(population_size, uniform, problem)
     for i_guess in range(startpoints.size[1]):
         # assign first generation
-        state.xs.append(list(startpoints[i_guess,:]).flatten())
+        state.xs.append(list(startpoints[i_guess, :]).flatten())
         state.xs.fvals(problem.objective(startpoints[i_guess, :]))
 
     # iterate over the generations
@@ -316,6 +358,6 @@ def get_distances(xs, x):
             continue
 
         # compute distances
-        distances.append(np.linalg.norm(x - ix))
+        distances.append(norm(x - ix))
 
     return distances
