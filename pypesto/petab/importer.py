@@ -330,7 +330,8 @@ class PetabImporter:
                     for override in observable_overrides + noise_overrides:
                         hierarchical_problem.insert_for_id(
                             override, condition_ix, time_ix, observable_ix)
-
+        print([(x.id, x.indices) for x in hierarchical_problem.xs])
+    
     def create_objective(self,
                          model=None,
                          solver=None,

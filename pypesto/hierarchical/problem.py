@@ -20,11 +20,8 @@ class HierarchicalProblem:
         Create list of hierarchical parameters from parameter df
         based on name conventions.
         """
-        # TODO need to make sure ordering is the same as in 
-        # petab_problem.get_optimization_parameters
-
+        # create list of hierarchical parameters
         xs = []
-
         for ix, x in enumerate(df.reset_index()['parameterId']):
             type_ = None
             default_val_ = None
@@ -42,6 +39,7 @@ class HierarchicalProblem:
                     id_=x, ix_=ix, type_=type_, default_val_=default_val_)
                 xs.append(x)
 
+        # create problem
         return HierarchicalProblem(xs)
 
     def get_x_ids(self):
@@ -72,5 +70,21 @@ class HierarchicalProblem:
     def validate(self):
         """
         Check that assumptions are fulfilled.
+        """
+        self._validate_scaling_and_offset()
+
+    def _validate_scaling_and_offset(self):
+        """
+        Requirement: For every scaling, all associated data points must either
+        have no offset, or all the same offset.
+        The same is required the other way round, i.e. scalings and offsets
+        must be associated with the same data points.
+        """
+        pass
+
+    def _validate_scaling_and_sigma(self):
+        """
+        Requirement: For every scaling, all associated data points must
+        bla bla.
         """
         pass

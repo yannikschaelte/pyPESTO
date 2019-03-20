@@ -17,8 +17,16 @@ except ImportError:
 
 
 class HierarchicalAmiciCalculator:
+    """
+    A calculator is passed as `calculator` to the pypesto.AmiciObjective.
+    While this class cannot be used directly, it has two subclasses
+    which allow to use forward or adjoint sensitivity analysis to
+    solve a `pypesto.HierarchicalProblem` efficiently in an inner loop,
+    while the outer optimization is only concerned with variables not
+    specified as `pypesto.HierarchicalParameter`s.
+    """
 
-    def __init__(self, problem: "HierarchicalProblem"):
+    def __init__(self, problem: HierarchicalProblem):
         self.problem = problem
 
     def __call__(self, obj, x, sensi_orders, mode):
@@ -38,7 +46,7 @@ class HierarchicalForwardAmiciCalculator(HierarchicalAmiciCalculator):
         sres = np.zeros([0, obj.dim])
 
         # set order in solver
-        print("sensi_order: ", sensi_order)
+        #print("sensi_order: ", sensi_order)
         obj.amici_solver.setSensitivityOrder(sensi_order)
 
         # run amici simulation
@@ -48,12 +56,12 @@ class HierarchicalForwardAmiciCalculator(HierarchicalAmiciCalculator):
             obj.edatas,
             num_threads=min(obj.n_threads, len(obj.edatas)),
         )
-        #print(rdatas[0])
+
+        # check if any simulation failed
         if any([rdata['status'] < 0.0 for rdata in rdatas]):
             return obj.get_error_output(rdatas)
 
         # edatas to numpy arrays
-        # TODO cache
         edatas = [amici.numpy.edataToNumPyArrays(edata)
                   for edata in obj.edatas]
 
@@ -62,7 +70,7 @@ class HierarchicalForwardAmiciCalculator(HierarchicalAmiciCalculator):
 
         nllh = compute_nllh(edatas, rdatas, optimal_scalings)
         if sensi_order > 0:
-            snllh = compute_snllh(edatas, rdatas, optimal_scalings, obj.x_ids, obj.mapping_par_opt_to_par_sim)
+            snllh = compute_snllh(edatas, rdatas, optimal_scalings, obj.x_ids, obj.mapping_par_opt_to_par_sim, obj.dim)
 
         # TODO compute FIM or HESS
         # TODO RES, SRES should also be possible, right?
@@ -88,7 +96,9 @@ class HierarchicalAdjointAmiciCalculator(HierarchicalAmiciCalculator):
 def compute_optimal_scaling_matrix(problem, edatas, rdatas):
     optimal_scalings = compute_optimal_scalings(problem, edatas, rdatas)
     matrix = matrix_like(rdatas, val=1.0)
-    for x, opt_s in zip(problem.get_xs_for_type(HierarchicalParameter.SCALING), optimal_scalings):
+    for x, opt_s in zip(
+			problem.get_xs_for_type(HierarchicalParameter.SCALING),
+			optimal_scalings):
         apply_optimal_scaling(x, opt_s, matrix)
     return matrix
 
@@ -106,19 +116,17 @@ def compute_optimal_scaling(x, edatas, rdatas):
     den = 0.0
 
     for condition_ix, time_ix, observable_ix in x.iterate():
-        #print(condition_ix, time_ix, observable_ix)
         y = edatas[condition_ix]['observedData'][time_ix, observable_ix]
         h = rdatas[condition_ix]['y'][time_ix, observable_ix]
         sigma = rdatas[condition_ix]['sigmay'][time_ix, observable_ix]
-        #print(y, h, sigma)
+
         if np.isnan(y) or np.isnan(h) or np.isnan(sigma):
             continue
 
-        num += (y - h) * h / sigma**2
+        num += y * h / sigma**2
         den += h**2 / sigma**2
 
     # TODO check for 0.0
-    #print("num, den: ", num, den, num/den)
     return num / den
 
 
@@ -142,21 +150,30 @@ def apply_optimal_scaling(x, opt_s, matrix):
 def compute_nllh(edatas, rdatas, optimal_scalings):
     nllh = 0.0
     for edata, rdata, optimal_s in zip(edatas, rdatas, optimal_scalings):
+        #print(edata['observedData'], optimal_s, rdata['y'], rdata['sigmay'])
+        nllh += 0.5 * np.nansum(np.log(2*np.pi*rdata['sigmay']**2))
         nllh += 0.5 * np.nansum((edata['observedData'] - optimal_s * rdata['y'])**2 / rdata['sigmay']**2)
-    print(nllh)
+    #print(nllh)
     return nllh
 
 
-def compute_snllh(edatas, rdatas, optimal_scalings, x_ids, mapping_par_opt_to_par_sim):
-    snllh = 0.0
+def compute_snllh(edatas, rdatas, optimal_scalings, x_ids, mapping_par_opt_to_par_sim, dim):
+    snllh = np.zeros(dim)
     for condition_ix, (edata, rdata, optimal_s) in \
             enumerate(zip(edatas, rdatas, optimal_scalings)):
+        # sy is n_obs x n_par x n_time
+        sy_ = rdata['sy']
+        sy = np.full((sy_.shape[1],sy_.shape[0],sy_.shape[2]), np.nan)
+        for i in range(sy_.shape[1]):
+            sy[i] = sy_[:,i,:]
+        #print(sy)
         val = np.nansum((edata['observedData'] - optimal_s * rdata['y']) \
-                / rdata['sigmay']**2) * optimal_s * rdata['sy']
+                / rdata['sigmay']**2 * optimal_s * sy, axis=(1, 2))
+        #print(val)
         add_sim_grad_to_opt_grad(
             x_ids,
             mapping_par_opt_to_par_sim[condition_ix],
             val,
             snllh,
-            coefficient=1.0)
+            coefficient=-1.0)
     return snllh
