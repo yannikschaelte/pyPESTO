@@ -27,14 +27,27 @@ class HierarchicalAmiciCalculator:
     """
 
     def __init__(self, problem: HierarchicalProblem):
+        """
+        Initialize the calculator from the given problem.
+        """
         self.problem = problem
 
-    def __call__(self, obj, x, sensi_orders, mode):
+    def __call__(self, obj, x, sensi_order, mode):
+        """
+        This function is called inside `pypesto.AmiciObjective.__call__`
+        after minor preprocessing,
+        and is supposed to return the function value, derivatives and
+        possibly residuals in a dict for the given input.
+        """
         raise NotImplementedError(
             "This class is not intended to be called.")
 
 
 class HierarchicalForwardAmiciCalculator(HierarchicalAmiciCalculator):
+    """
+    Use forward sensitivity analysis to compute derivatives for the
+    hierarchical problem.
+    """
 
     def __call__(self, obj, x, sensi_order, mode):
         # prepare outputs
@@ -61,9 +74,15 @@ class HierarchicalForwardAmiciCalculator(HierarchicalAmiciCalculator):
         if any([rdata['status'] < 0.0 for rdata in rdatas]):
             return obj.get_error_output(rdatas)
 
-        # edatas to numpy arrays
+        # edatas to numpy arrays (TODO cache this?)
         edatas = [amici.numpy.edataToNumPyArrays(edata)
                   for edata in obj.edatas]
+
+        # compute optimal parameters (code base same for fw+ad)
+
+        # create matrices from optimal parameters (only fw)
+
+        # compute objective and derivatives (only fw)
 
         # compute optimal parameters
         optimal_scalings = compute_optimal_scaling_matrix(self.problem, edatas, rdatas)
@@ -86,6 +105,10 @@ class HierarchicalForwardAmiciCalculator(HierarchicalAmiciCalculator):
 
 
 class HierarchicalAdjointAmiciCalculator(HierarchicalAmiciCalculator):
+    """
+    Use adjoint sensitivity analysis to compute derivatives for the
+    hierarchical problem.
+    """
 
     def __call__(self, obj, x, sensi_orders, mode):
         raise NotImplementedError(
