@@ -346,7 +346,6 @@ class PetabImporter:
                 measurement_df=self.petab_problem.measurement_df,
                 parameter_df=self.petab_problem.parameter_df,
                 sbml_model=self.petab_problem.sbml_model,
-                par_opt_ids=par_opt_ids,
                 par_sim_ids=par_sim_ids,
                 simulation_conditions=simulation_conditions,
             )
