@@ -304,14 +304,14 @@ class MetaheuristicPreSearch(dict):
         chosen = []
         # get fittest individuals
         for i in range(n_fittest):
-            new_xs.append(self.next_xs[ord_fit[i]])
+            new_xs.append(self.next_xs[ord_fit[i]].flatten())
             new_fvals.append(self.next_fvals[ord_fit[i]])
             chosen.append(ord_fit[i])
         # get most diverse individuals
         for i in range(n_diverse):
-            new_xs.append(self.next_xs[ord_div[i]])
-            new_fvals.append(self.next_fvals[ord_div[i]])
-            chosen.append(ord_div[i])
+            new_xs.append(self.next_xs[ord_div[-i]].flatten())
+            new_fvals.append(self.next_fvals[ord_div[-i]])
+            chosen.append(ord_div[-i])
 
         possible_inds = [i for i in range(len(self.next_fvals))
                          if not i in chosen]
