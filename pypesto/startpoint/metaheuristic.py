@@ -39,7 +39,7 @@ class MetaheuristicPreSearch(dict):
         Number of generations in the pre-search phase
 
     weighting: tuple of float, optional
-        numbers between 0 and 1, which add up to less or equal than 1,
+        two numbers between 0 and 1, which add up to less or equal than 1,
         which specify how the new population should be chosen among the
         created offspring:
         first number: fraction of fittest values that should survive
@@ -55,7 +55,7 @@ class MetaheuristicPreSearch(dict):
                  sample_ub=None,
                  population_size=None,
                  n_generations=None,
-                 diversity=None,
+                 weighting=None,
                  ):
         super().__init__()
 
@@ -109,7 +109,7 @@ class MetaheuristicPreSearch(dict):
 
         # assign diversity
         if weighting is None:
-            self.weighting = (0.3, 0.3)
+            self.weighting = (0.4, 0.4)
         else:
             self.weighting = weighting
 
@@ -257,21 +257,23 @@ class MetaheuristicPreSearch(dict):
     def sample_diversity(self, problem):
         # compute diversity scores for points
         for x in next_xs:
-            dists = get_distances(next_xs, x)
-            self.next_divs.append(sum([norm(dist) for dist in dists]))
+            self.next_divs.append(get_diversity(next_xs, x))
 
         # compute a median div, in order to make sure that new points show a
-        #  higher diversity than the meadian later on
+        # higher diversity than the meadian later on
         median_div = np.median(self.next_divs)
 
         for i_guess in range(self.div_pop):
             # sample point
             point_not_evaluable = True
             while point_not_evaluable:
-                x = np.random.randon( )
+                x = np.random.random((1, self.ndim))
+                x = rescale(x, self.sample_lb, self.sample_ub)
 
                 # check for diversity
-                
+                div = get_diversity(next_xs, x)
+                if div < median_div:
+                    continue
 
                 # check whether guess could be evaluated
                 fval = problem.objective(x)
@@ -281,6 +283,52 @@ class MetaheuristicPreSearch(dict):
             # append
             self.next_xs.append(x)
             self.next_fvals.append(fval)
+
+
+    def choose_guesses(self):
+        # recompute diversity
+        self.next_divs = []
+        for x in next_xs:
+            self.next_divs.append(get_diversity(next_xs, x))
+
+        # recompute numbers of indiviuals, which will be chosen
+        n_fittest = np.floor(self.weighting[0] * self.population_size)
+        n_diverse = np.floor(self.weighting[1] * self.population_size)
+        n_rest = self.population_size - n_fittest - n_diverse
+
+        # get orderings accoring to fitness and to diversity
+        ord_fit = np.argsort(self.next_fvals)
+        ord_div = np.argsort(self.next_divs)
+
+        # recreate new population
+        new_xs = []
+        new_fvals = []
+        # get fittest individuals
+        for i in range(n_fittest):
+            new_xs.append(self.next_xs[ord_fit[i]])
+            new_fvals.append(self.next_fvals[ord_fit[i]])
+            self.next_xs[ord_fit[i]] = None
+            self.next_fvals[ord_fit[i]] = None
+        # get most diverse individuals
+        for i in range(n_diverse):
+            new_xs.append(self.next_xs[ord_div[i]])
+            new_fvals.append(self.next_fvals[ord_div[i]])
+            self.next_xs[ord_div[i]] = None
+            self.next_fvals[ord_div[i]] = None
+
+        # prune out entries which have already been taken
+        next_xs = [x for x in self.next_xs if x is not None]
+        next_fvals = [fval for fval in self.next_fvals if fval is not None]
+
+        # pick randomly the rest of the guesses
+        inds = np.random.permutation(len(next_fvals))
+        for i in range(n_rest):
+            new_fvals.append(next_fvals[inds[i]])
+            new_xs.append(next_xs[inds[i]])
+
+        # update populations
+        self.xs = new_xs
+        self.fvals = new_fvals
 
 
     def create_offspring_from_pair(self, pair):
@@ -361,3 +409,7 @@ def get_distances(xs, x):
         distances.append(norm(x - ix))
 
     return distances
+
+def get_diversity(xs, x):
+    dists = get_distances(xs, x)
+    return sum([norm(dist) for dist in dists])
