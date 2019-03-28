@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import time
+import copy
 import os
 from .constants import MODE_FUN, MODE_RES, FVAL, GRAD, HESS, RES, SRES
 from .util import res_to_chi2, sres_to_schi2
@@ -220,7 +221,12 @@ class ObjectiveHistory:
             if self.index is not None:
                 filename = filename.replace("{index}", str(self.index))
             # save
-            self.trace.to_csv(filename)
+            trace_copy = copy.deepcopy(self.trace)
+            for field in ['grad', 'hess', 'res', 'sres', 'schi2', 'x']:
+                trace_copy[field] = trace_copy[field].apply(
+                    ndarray2string_full
+                )
+            trace_copy.to_csv(filename)
 
     def _update_vals(self, x, sensi_orders, mode, result):
         """
@@ -247,3 +253,9 @@ class ObjectiveHistory:
         if fval < self.fval_min:
             self.fval_min = fval
             self.x_min = x
+
+def ndarray2string_full(x):
+    if x is None:
+        return None
+    return np.array2string(x, threshold=len(x), precision=16,
+                           max_line_width=np.inf)
