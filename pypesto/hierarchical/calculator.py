@@ -75,7 +75,7 @@ class HierarchicalForwardAmiciCalculator(HierarchicalAmiciCalculator):
             return obj.get_error_output(rdatas)
 
         # edatas to numpy arrays (TODO cache this?)
-        edatas = [amici.numpy.edataToNumPyArrays(edata)
+        edatas = [amici.numpy.ExpDataView(edata)
                   for edata in obj.edatas]
 
         # compute optimal parameters (code base same for fw+ad)
