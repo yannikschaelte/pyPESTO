@@ -646,10 +646,18 @@ def _find_output_folder_name(petab_problem: petab.Problem):
 
 
 def _to_amici_noise_distributions(noise_distributions):
+    """
+    Map from the petab to the amici format of noise distribution
+    identifiers.
+    """
     amici_distrs = {}
     for id_, val in noise_distributions.items():
-        amici_distrs[id_] = val['observableTransformation'] \
-            + '-' + val['noiseDistribution']
+        amici_val = ''
+        if val['observableTransformation']:
+            amici_val += val['observableTransformation'] + '-'
+        if val['noiseDistribution']:
+            amici_val += val['noiseDistribution']
+        amici_distrs[id_] = amici_val
     return amici_distrs
 
 
