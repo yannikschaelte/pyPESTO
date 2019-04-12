@@ -25,15 +25,16 @@ class HierarchicalProblem:
         for ix, x in enumerate(df.reset_index()['parameterId']):
             type_ = None
             default_val_ = None
-            if x.startswith('scaling_'):
-                type_ = HierarchicalParameter.SCALING
-                default_val_ = 1.0
-            elif x.startswith('offset_'):
-                type_ = HierarchicalParameter.OFFSET
-                default_val_ = 0.0
-            elif x.startswith('sd_') or x.startswith('sigma_'):
-                type_ = HierarchicalParameter.SIGMA
-                default_val_ = 1.0
+            if df.reset_index()['hierarchicalOptimization'][ix]:
+                if df.reset_index()['parameterType'][ix] == 'scaling':
+                    type_ = HierarchicalParameter.SCALING
+                    default_val_ = 1.0
+                elif df.reset_index()['parameterType'][ix] == 'offset':
+                    type_ = HierarchicalParameter.OFFSET
+                    default_val_ = 0.0
+                elif df.reset_index()['parameterType'][ix] == 'sigma':
+                    type_ = HierarchicalParameter.SIGMA
+                    default_val_ = 1.0
             if type_:
                 x = HierarchicalParameter(
                     id_=x, ix_=ix, type_=type_, default_val_=default_val_)
@@ -41,6 +42,7 @@ class HierarchicalProblem:
 
         # create problem
         return HierarchicalProblem(xs)
+
 
     def get_x_ids(self):
         return [x.id for x in self.xs]
