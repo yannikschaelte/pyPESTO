@@ -1,17 +1,15 @@
 import logging
 
-
 logger = logging.getLogger(__name__)
 
 
 class HierarchicalParameter:
-
     SCALING = 'SCALING'
     OFFSET = 'OFFSET'
     SIGMA = 'SIGMA'
     OPTIMALSCALING = 'OPTIMALSCALING'
 
-    def __init__(self, id_, ix_, type_,default_val_,group_=None, category_=None):
+    def __init__(self, id_, ix_, type_, default_val_, group_=None, category_=None):
         """
         Parameters
         ----------

@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 class HierarchicalProblem:
 
-    def __init__(self, xs = None, options = None):
+    def __init__(self, xs=None, options=None):
         """
         s_ids, b_ids, sigma_ids should all be estimated parameters.
         """
@@ -28,14 +28,15 @@ class HierarchicalProblem:
         xs = []
         for ix, x in enumerate(df.reset_index()['parameterId']):
             type_ = None
-            bound_ = None
             default_val_ = None
+            group_ = None
+            category_ = None
             if df.reset_index()['hierarchicalOptimization'][ix]:
-                #TODO: hierarchicalOptimization and parameterType columns are optional. Need to check wether they exist
+                # TODO: hierarchicalOptimization and parameterType columns are optional. Need to check wether they exist
                 if df.reset_index()['parameterType'][ix] == 'scaling':
                     type_ = HierarchicalParameter.SCALING
                     default_val_ = 1.0
-                    group_= None
+                    group_ = None
                     category_ = None
                 elif df.reset_index()['parameterType'][ix] == 'offset':
                     type_ = HierarchicalParameter.OFFSET
@@ -67,11 +68,11 @@ class HierarchicalProblem:
             if x.id == id_:
                 return x
         return None
-    
+
     def get_xs_for_type(self, type_):
         return [x for x in self.xs if x.type == type_]
 
-    def get_groups_for_xs(self,type_):
+    def get_groups_for_xs(self, type_):
         groups = [x.group for x in self.xs if x.type == type_]
         return list(set(groups))
 
@@ -82,7 +83,7 @@ class HierarchicalProblem:
     def insert_for_id(self, id_, condition_ix, time_ix, observable_ix):
         x = self.get_x_by_id(id_)
         if x:
-            x.append(condition_ix, time_ix, observable_ix,[])
+            x.append(condition_ix, time_ix, observable_ix, [])
 
     def is_empty(self):
         return len(self.xs) == 0
