@@ -40,7 +40,7 @@ def assign_clusters(vals):
     # get clustering based on distance
     clust = cluster.hierarchy.fcluster(
         cluster.hierarchy.linkage(vals),
-        t=0.1, criterion='distance')
+        t=0.001, criterion='distance')
 
     # get unique clusters
     _, ind_clust = np.unique(clust, return_index=True)

@@ -172,16 +172,15 @@ def add_sim_hess_to_opt_hess(par_opt_ids,
     """
     Sum simulation hessians to objective hessian according to the provided
     mapping `mapping_par_opt_to_par_sim`.
-
     Parameters
     ----------
-
     Same as for add_sim_grad_to_opt_grad, replacing the gradients by hessians.
     """
 
     # use enumerate for first axis as plist is not applied
     # https://github.com/ICB-DCM/AMICI/issues/274
-    for par_sim_idx, par_opt_id in enumerate(mapping_par_opt_to_par_sim):
+    par_sim_idx = 0
+    for par_opt_id in mapping_par_opt_to_par_sim:
         if not isinstance(par_opt_id, str):
             # this was a numeric override for which we ignore the hessian
             continue
@@ -203,6 +202,7 @@ def add_sim_hess_to_opt_hess(par_opt_ids,
             opt_hess[par_opt_idx, par_opt_idx_2] += \
                 coefficient * sim_hess[par_sim_idx, par_sim_idx_2]
             par_sim_idx_2 += 1
+    par_sim_idx += 1
 
 
 def sim_sres_to_opt_sres(par_opt_ids,

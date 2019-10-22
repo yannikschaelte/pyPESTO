@@ -9,8 +9,9 @@ class HierarchicalParameter:
     SCALING = 'SCALING'
     OFFSET = 'OFFSET'
     SIGMA = 'SIGMA'
+    OPTIMALSCALING = 'OPTIMALSCALING'
 
-    def __init__(self, id_, ix_, type_, default_val_):
+    def __init__(self, id_, ix_, type_,default_val_,group_=None, category_=None):
         """
         Parameters
         ----------
@@ -28,6 +29,8 @@ class HierarchicalParameter:
         self.id = id_
         self.ix = ix_
         self.type = type_
+        self.group = group_
+        self.category = category_
         self.default_val = default_val_
         self.indices = []
 
