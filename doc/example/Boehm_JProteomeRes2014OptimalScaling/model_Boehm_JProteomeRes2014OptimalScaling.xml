@@ -1,0 +1,496 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sbml xmlns="http://www.sbml.org/sbml/level2/version4" level="2" version="4">
+  <model id="Boehm_JProteomeRes2014OptimalScaling" name="Boehm_JProteomeRes2014OptimalScaling">
+    <listOfUnitDefinitions>
+      <unitDefinition id="time" name="time">
+        <listOfUnits>
+          <unit kind="second" exponent="1" scale="0" multiplier="60"/>
+        </listOfUnits>
+      </unitDefinition>
+    </listOfUnitDefinitions>
+    <listOfCompartments>
+      <compartment id="cyt" spatialDimensions="3" size="1.4" constant="true"/>
+      <compartment id="nuc" spatialDimensions="3" size="0.45" constant="true"/>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species id="STAT5A" name="STAT5A" compartment="cyt" initialConcentration="1" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="STAT5B" name="STAT5B" compartment="cyt" initialConcentration="1" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="pApB" name="pApB" compartment="cyt" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="pApA" name="pApA" compartment="cyt" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="pBpB" name="pBpB" compartment="cyt" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="nucpApA" name="nucpApA" compartment="nuc" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="nucpApB" name="nucpApB" compartment="nuc" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="nucpBpB" name="nucpBpB" compartment="nuc" initialConcentration="0" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+    </listOfSpecies>
+    <listOfParameters>
+      <parameter id="Epo_degradation_BaF3" value="0.0269738286367359" constant="true"/>
+      <parameter id="k_exp_hetero" value="1.00094251286741e-05" constant="true"/>
+      <parameter id="k_exp_homo" value="0.00617193081581346" constant="true"/>
+      <parameter id="k_imp_hetero" value="0.0163708512310568" constant="true"/>
+      <parameter id="k_imp_homo" value="96945.5391768823" constant="true"/>
+      <parameter id="k_phos" value="15766.8336642826" constant="true"/>
+      <parameter id="ratio" value="0.693" constant="true"/>
+      <parameter id="sigma_pSTAT5A_rel" value="4.11880966408792" constant="false"/>
+      <parameter id="sigma_pSTAT5B_rel" value="7.04378709564081" constant="false"/>
+      <parameter id="sigma_rSTAT5A_rel" value="3.3691824511569" constant="false"/>
+      <parameter id="noiseParameter1_pSTAT5A_rel" value="4.11880966408792" constant="true"/>
+      <parameter id="noiseParameter1_pSTAT5B_rel" value="7.04378709564081" constant="true"/>
+      <parameter id="noiseParameter1_rSTAT5A_rel" value="3.3691824511569" constant="true"/>
+      <parameter id="specC17" value="0.107" constant="true"/>
+      <parameter id="observable_pSTAT5A_rel" value="1" constant="false"/>
+      <parameter id="observable_pSTAT5B_rel" value="1" constant="false"/>
+      <parameter id="observable_rSTAT5A_rel" value="1" constant="false"/>
+      <parameter id="BaF3_Epo" value="1.25e-07" constant="false"/>
+      <parameter id="observableParameter1_pSTAT5A_rel" value="1" constant="false"/>
+      <parameter id="observableParameter2_pSTAT5A_rel" value="1" constant="false"/>
+      <parameter id="observableParameter3_pSTAT5A_rel" value="1" constant="false"/>
+      <parameter id="observableParameter4_pSTAT5A_rel" value="1" constant="false"/>
+      <parameter id="observableParameter5_pSTAT5A_rel" value="1" constant="false"/>
+      <parameter id="observableParameter6_pSTAT5A_rel" value="1" constant="false"/>
+      <parameter id="observableParameter7_pSTAT5A_rel" value="1" constant="false"/>
+      <parameter id="observableParameter8_pSTAT5A_rel" value="1" constant="false"/>
+      <parameter id="observableParameter9_pSTAT5A_rel" value="1" constant="false"/>
+      <parameter id="observableParameter10_pSTAT5A_rel" value="1" constant="false"/>
+      <parameter id="observableParameter11_pSTAT5A_rel" value="1" constant="false"/>
+      <parameter id="observableParameter12_pSTAT5A_rel" value="1" constant="false"/>
+      <parameter id="observableParameter13_pSTAT5A_rel" value="1" constant="false"/>
+      <parameter id="observableParameter14_pSTAT5A_rel" value="1" constant="false"/>
+      <parameter id="observableParameter15_pSTAT5A_rel" value="1" constant="false"/>
+      <parameter id="observableParameter16_pSTAT5A_rel" value="1" constant="false"/>
+      <parameter id="observableParameter1_pSTAT5B_rel" value="1" constant="false"/>
+      <parameter id="observableParameter2_pSTAT5B_rel" value="1" constant="false"/>
+      <parameter id="observableParameter3_pSTAT5B_rel" value="1" constant="false"/>
+      <parameter id="observableParameter4_pSTAT5B_rel" value="1" constant="false"/>
+      <parameter id="observableParameter5_pSTAT5B_rel" value="1" constant="false"/>
+      <parameter id="observableParameter6_pSTAT5B_rel" value="1" constant="false"/>
+      <parameter id="observableParameter7_pSTAT5B_rel" value="1" constant="false"/>
+      <parameter id="observableParameter8_pSTAT5B_rel" value="1" constant="false"/>
+      <parameter id="observableParameter9_pSTAT5B_rel" value="1" constant="false"/>
+      <parameter id="observableParameter10_pSTAT5B_rel" value="1" constant="false"/>
+      <parameter id="observableParameter11_pSTAT5B_rel" value="1" constant="false"/>
+      <parameter id="observableParameter12_pSTAT5B_rel" value="1" constant="false"/>
+      <parameter id="observableParameter13_pSTAT5B_rel" value="1" constant="false"/>
+      <parameter id="observableParameter14_pSTAT5B_rel" value="1" constant="false"/>
+      <parameter id="observableParameter15_pSTAT5B_rel" value="1" constant="false"/>
+      <parameter id="observableParameter16_pSTAT5B_rel" value="1" constant="false"/>
+      <parameter id="observableParameter1_rSTAT5A_rel" value="1" constant="false"/>
+      <parameter id="observableParameter2_rSTAT5A_rel" value="1" constant="false"/>
+      <parameter id="observableParameter3_rSTAT5A_rel" value="1" constant="false"/>
+      <parameter id="observableParameter4_rSTAT5A_rel" value="1" constant="false"/>
+      <parameter id="observableParameter5_rSTAT5A_rel" value="1" constant="false"/>
+      <parameter id="observableParameter6_rSTAT5A_rel" value="1" constant="false"/>
+      <parameter id="observableParameter7_rSTAT5A_rel" value="1" constant="false"/>
+      <parameter id="observableParameter8_rSTAT5A_rel" value="1" constant="false"/>
+      <parameter id="observableParameter9_rSTAT5A_rel" value="1" constant="false"/>
+      <parameter id="observableParameter10_rSTAT5A_rel" value="1" constant="false"/>
+      <parameter id="observableParameter11_rSTAT5A_rel" value="1" constant="false"/>
+      <parameter id="observableParameter12_rSTAT5A_rel" value="1" constant="false"/>
+      <parameter id="observableParameter13_rSTAT5A_rel" value="1" constant="false"/>
+      <parameter id="observableParameter14_rSTAT5A_rel" value="1" constant="false"/>
+      <parameter id="observableParameter15_rSTAT5A_rel" value="1" constant="false"/>
+      <parameter id="observableParameter16_rSTAT5A_rel" value="1" constant="false"/>
+    </listOfParameters>
+    <listOfInitialAssignments>
+      <initialAssignment symbol="STAT5A">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <times/>
+            <cn> 207.6 </cn>
+            <ci> ratio </ci>
+          </apply>
+        </math>
+      </initialAssignment>
+      <initialAssignment symbol="STAT5B">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <minus/>
+            <cn> 207.6 </cn>
+            <apply>
+              <times/>
+              <cn> 207.6 </cn>
+              <ci> ratio </ci>
+            </apply>
+          </apply>
+        </math>
+      </initialAssignment>
+    </listOfInitialAssignments>
+    <listOfRules>
+      <assignmentRule variable="sigma_pSTAT5A_rel">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <ci> noiseParameter1_pSTAT5A_rel </ci>
+          </math>
+      </assignmentRule>
+      <assignmentRule variable="sigma_pSTAT5B_rel">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <ci> noiseParameter1_pSTAT5B_rel </ci>
+          </math>
+      </assignmentRule>
+      <assignmentRule variable="sigma_rSTAT5A_rel">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+              <ci> noiseParameter1_rSTAT5A_rel </ci>
+          </math>
+      </assignmentRule>
+      <assignmentRule variable="observable_pSTAT5A_rel">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <divide/>
+            <apply>
+              <plus/>
+              <apply>
+                <times/>
+                <cn type="integer"> 100 </cn>
+                <ci> pApB </ci>
+              </apply>
+              <apply>
+                <times/>
+                <cn type="integer"> 200 </cn>
+                <ci> pApA </ci>
+                <ci> specC17 </ci>
+              </apply>
+            </apply>
+            <apply>
+              <plus/>
+              <ci> pApB </ci>
+              <apply>
+                <times/>
+                <ci> STAT5A </ci>
+                <ci> specC17 </ci>
+              </apply>
+              <apply>
+                <times/>
+                <cn type="integer"> 2 </cn>
+                <ci> pApA </ci>
+                <ci> specC17 </ci>
+              </apply>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="BaF3_Epo">
+	<math xmlns="http://www.w3.org/1998/Math/MathML">
+	 <apply>
+	  <times/>
+	  <cn>0.000000125</cn>
+	  <apply>
+	   <exp/>
+	   <apply>
+	    <times/>
+	    <apply>
+	     <times/>
+	     <cn type='integer'>-1</cn>
+	     <ci>Epo_degradation_BaF3</ci>
+	    </apply>
+            <csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time"> 
+            t 
+            </csymbol> 
+	   </apply>
+	  </apply>
+	 </apply>
+	</math>
+      </assignmentRule>
+      <assignmentRule variable="observable_pSTAT5B_rel">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <divide/>
+            <apply>
+              <minus/>
+              <apply>
+                <minus/>
+                <apply>
+                  <times/>
+                  <cn type="integer"> 100 </cn>
+                  <ci> pApB </ci>
+                </apply>
+                <apply>
+                  <times/>
+                  <cn type="integer"> 200 </cn>
+                  <ci> pBpB </ci>
+                  <apply>
+                    <minus/>
+                    <ci> specC17 </ci>
+                    <cn type="integer"> 1 </cn>
+                  </apply>
+                </apply>
+              </apply>
+            </apply>
+            <apply>
+              <plus/>
+              <apply>
+                <minus/>
+                <apply>
+                  <times/>
+                  <ci> STAT5B </ci>
+                  <apply>
+                    <minus/>
+                    <ci> specC17 </ci>
+                    <cn type="integer"> 1 </cn>
+                  </apply>
+                </apply>
+                <ci> pApB </ci>
+              </apply>
+              <apply>
+                <times/>
+                <cn type="integer"> 2 </cn>
+                <ci> pBpB </ci>
+                <apply>
+                  <minus/>
+                  <ci> specC17 </ci>
+                  <cn type="integer"> 1 </cn>
+                </apply>
+              </apply>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+      <assignmentRule variable="observable_rSTAT5A_rel">
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+          <apply>
+            <divide/>
+            <apply>
+              <plus/>
+              <apply>
+                <times/>
+                <cn type="integer"> 100 </cn>
+                <ci> pApB </ci>
+              </apply>
+              <apply>
+                <times/>
+                <cn type="integer"> 100 </cn>
+                <ci> STAT5A </ci>
+                <ci> specC17 </ci>
+              </apply>
+              <apply>
+                <times/>
+                <cn type="integer"> 200 </cn>
+                <ci> pApA </ci>
+                <ci> specC17 </ci>
+              </apply>
+            </apply>
+            <apply>
+              <minus/>
+              <apply>
+                <minus/>
+                <apply>
+                  <plus/>
+                  <apply>
+                    <times/>
+                    <cn type="integer"> 2 </cn>
+                    <ci> pApB </ci>
+                  </apply>
+                  <apply>
+                    <times/>
+                    <ci> STAT5A </ci>
+                    <ci> specC17 </ci>
+                  </apply>
+                  <apply>
+                    <times/>
+                    <cn type="integer"> 2 </cn>
+                    <ci> pApA </ci>
+                    <ci> specC17 </ci>
+                  </apply>
+                </apply>
+                <apply>
+                  <times/>
+                  <ci> STAT5B </ci>
+                  <apply>
+                    <minus/>
+                    <ci> specC17 </ci>
+                    <cn type="integer"> 1 </cn>
+                  </apply>
+                </apply>
+              </apply>
+              <apply>
+                <times/>
+                <cn type="integer"> 2 </cn>
+                <ci> pBpB </ci>
+                <apply>
+                  <minus/>
+                  <ci> specC17 </ci>
+                  <cn type="integer"> 1 </cn>
+                </apply>
+              </apply>
+            </apply>
+          </apply>
+        </math>
+      </assignmentRule>
+    </listOfRules>
+    <listOfReactions>
+      <reaction id="v1_v_0" name="v_0" reversible="false">
+        <listOfReactants>
+          <speciesReference species="STAT5A" stoichiometry="2"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="pApA" stoichiometry="1"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> cyt </ci>
+              <ci> BaF3_Epo </ci>
+              <apply>
+                <power/>
+                <ci> STAT5A </ci>
+                <cn type="integer"> 2 </cn>
+              </apply>
+              <ci> k_phos </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="v2_v_1" name="v_1" reversible="false">
+        <listOfReactants>
+          <speciesReference species="STAT5A" stoichiometry="1"/>
+          <speciesReference species="STAT5B" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="pApB" stoichiometry="1"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> cyt </ci>
+              <ci> BaF3_Epo </ci>
+              <ci> STAT5A </ci>
+              <ci> STAT5B </ci>
+              <ci> k_phos </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="v3_v_2" name="v_2" reversible="false">
+        <listOfReactants>
+          <speciesReference species="STAT5B" stoichiometry="2"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="pBpB" stoichiometry="1"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> cyt </ci>
+              <ci> BaF3_Epo </ci>
+              <apply>
+                <power/>
+                <ci> STAT5B </ci>
+                <cn type="integer"> 2 </cn>
+              </apply>
+              <ci> k_phos </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="v4_v_3" name="v_3" reversible="false">
+        <listOfReactants>
+          <speciesReference species="pApA" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="nucpApA" stoichiometry="1"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> cyt </ci>
+              <ci> k_imp_homo </ci>
+              <ci> pApA </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="v5_v_4" name="v_4" reversible="false">
+        <listOfReactants>
+          <speciesReference species="pApB" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="nucpApB" stoichiometry="1"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> cyt </ci>
+              <ci> k_imp_hetero </ci>
+              <ci> pApB </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="v6_v_5" name="v_5" reversible="false">
+        <listOfReactants>
+          <speciesReference species="pBpB" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="nucpBpB" stoichiometry="1"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> cyt </ci>
+              <ci> k_imp_homo </ci>
+              <ci> pBpB </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="v7_v_6" name="v_6" reversible="false">
+        <listOfReactants>
+          <speciesReference species="nucpApA" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="STAT5A" stoichiometry="2"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> nuc </ci>
+              <ci> k_exp_homo </ci>
+              <ci> nucpApA </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="v8_v_7" name="v_7" reversible="false">
+        <listOfReactants>
+          <speciesReference species="nucpApB" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="STAT5A" stoichiometry="1"/>
+          <speciesReference species="STAT5B" stoichiometry="1"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> nuc </ci>
+              <ci> k_exp_hetero </ci>
+              <ci> nucpApB </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+      <reaction id="v9_v_8" name="v_8" reversible="false">
+        <listOfReactants>
+          <speciesReference species="nucpBpB" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="STAT5B" stoichiometry="2"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> nuc </ci>
+              <ci> k_exp_homo </ci>
+              <ci> nucpBpB </ci>
+            </apply>
+          </math>
+        </kineticLaw>
+      </reaction>
+    </listOfReactions>
+  </model>
+</sbml>
